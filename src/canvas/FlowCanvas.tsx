@@ -7,7 +7,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
-  useStore,
+  useStoreApi,
   type Connection,
   type Edge,
 } from "@xyflow/react";
@@ -17,7 +17,7 @@ import { DeviceNode, type DeviceNodeType } from "./DeviceNode";
 import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
 import { PatchCableEdge } from "./PatchCableEdge";
-import { computeRoutes } from "./routing";
+import { computeRoutes, type HandleInfo, type RoutingNode } from "./routing";
 
 const nodeTypes = { device: DeviceNode };
 const edgeTypes = { patchCable: PatchCableEdge };
@@ -33,16 +33,42 @@ function FlowCanvasInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState<DeviceNodeType>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition } = useReactFlow();
-  const nodeLookup = useStore((state) => state.nodeLookup);
+  const storeApi = useStoreApi();
 
   // Le routage (évitement des boîtes, anti-chevauchement) est recalculé
   // pour tous les câbles dès qu'un nœud bouge ou qu'un câble change ;
   // onEdgesChange/onConnect continuent d'agir sur `edges`, pas sur ce
   // tableau dérivé qui ne sert qu'à l'affichage.
+  //
+  // On se cale sur `nodes` (notre état contrôlé, qui change bien à
+  // chaque frame de déplacement) plutôt que sur le store interne de
+  // React Flow, dont la référence ne change pas forcément pendant un
+  // drag. La position/taille vient donc de `nodes`, et on va chercher
+  // un instantané frais des handles (leur position à l'intérieur du
+  // nœud) directement dans le store à chaque recalcul.
   const routedEdges = useMemo(() => {
-    const routes = computeRoutes(nodeLookup, edges);
+    const nodeLookup = storeApi.getState().nodeLookup;
+    const routingNodes: RoutingNode[] = nodes.map((node) => {
+      const bounds = nodeLookup.get(node.id)?.internals.handleBounds;
+      const handles: HandleInfo[] = [];
+      for (const h of [...(bounds?.source ?? []), ...(bounds?.target ?? [])]) {
+        if (h.id != null) {
+          handles.push({ id: h.id, x: h.x, y: h.y, width: h.width, height: h.height, position: h.position });
+        }
+      }
+      return {
+        id: node.id,
+        x: node.position.x,
+        y: node.position.y,
+        width: node.measured?.width ?? 0,
+        height: node.measured?.height ?? 0,
+        handles,
+      };
+    });
+
+    const routes = computeRoutes(routingNodes, edges);
     return edges.map((edge) => ({ ...edge, data: { ...edge.data, path: routes.get(edge.id) } }));
-  }, [nodeLookup, edges]);
+  }, [nodes, edges, storeApi]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();

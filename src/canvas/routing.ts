@@ -1,4 +1,4 @@
-import { Position, type Edge, type InternalNode } from "@xyflow/react";
+import { Position } from "@xyflow/react";
 
 // Routage des câbles : trajectoire en équerre qui évite les boîtes des
 // autres appareils et s'écarte des câbles déjà tracés (recherche de
@@ -17,9 +17,40 @@ interface Box {
   height: number;
 }
 
+export interface HandleInfo {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  position: Position;
+}
+
+// Représentation minimale d'un nœud dont routing.ts a besoin : la
+// position/taille vient de l'état React (fiable à chaque frame de
+// déplacement) et les handles viennent d'un instantané du store React
+// Flow — les deux sont fournis par l'appelant (FlowCanvas), routing.ts
+// ne connaît pas les types internes de React Flow.
+export interface RoutingNode {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  handles: HandleInfo[];
+}
+
+export interface RoutingEdge {
+  id: string;
+  source: string;
+  target: string;
+  sourceHandle: string | null | undefined;
+  targetHandle: string | null | undefined;
+}
+
 const CELL_SIZE = 10;
 const NODE_MARGIN = 12; // les câbles ne longent jamais une boîte de trop près
-const STUB_LENGTH = 24; // distance parcourue perpendiculairement avant de pouvoir tourner
+const STUB_LENGTH_CELLS = 3; // cellules parcourues perpendiculairement avant de pouvoir tourner
 const TURN_PENALTY = 4;
 const REUSE_PENALTY = 6; // pénalité par câble déjà passé par une cellule (anti-chevauchement)
 const GRID_PADDING = 100;
@@ -31,30 +62,12 @@ const DIRECTION_VECTOR: Record<Position, Point> = {
   [Position.Bottom]: { x: 0, y: 1 },
 };
 
-function nodeBox(node: InternalNode): Box {
-  return {
-    x: node.internals.positionAbsolute.x,
-    y: node.internals.positionAbsolute.y,
-    width: node.measured?.width ?? 0,
-    height: node.measured?.height ?? 0,
-  };
-}
-
 function inflate(box: Box, margin: number): Box {
   return { x: box.x - margin, y: box.y - margin, width: box.width + margin * 2, height: box.height + margin * 2 };
 }
 
-function findHandle(node: InternalNode, handleId: string | null | undefined) {
-  if (!handleId) return undefined;
-  const bounds = node.internals.handleBounds;
-  return bounds?.source?.find((h) => h.id === handleId) ?? bounds?.target?.find((h) => h.id === handleId);
-}
-
-function handleCenter(node: InternalNode, handle: { x: number; y: number; width: number; height: number }): Point {
-  return {
-    x: node.internals.positionAbsolute.x + handle.x + handle.width / 2,
-    y: node.internals.positionAbsolute.y + handle.y + handle.height / 2,
-  };
+function handleCenter(node: RoutingNode, handle: HandleInfo): Point {
+  return { x: node.x + handle.x + handle.width / 2, y: node.y + handle.y + handle.height / 2 };
 }
 
 interface Grid {
@@ -64,19 +77,24 @@ interface Grid {
   rows: number;
 }
 
+interface Cell {
+  col: number;
+  row: number;
+}
+
 function cellKey(col: number, row: number): string {
   return `${col},${row}`;
 }
 
-function pointToCell(grid: Grid, p: Point) {
+function pointToCell(grid: Grid, p: Point): Cell {
   return {
     col: Math.round((p.x - grid.originX) / CELL_SIZE),
     row: Math.round((p.y - grid.originY) / CELL_SIZE),
   };
 }
 
-function cellToPoint(grid: Grid, col: number, row: number): Point {
-  return { x: grid.originX + col * CELL_SIZE, y: grid.originY + row * CELL_SIZE };
+function cellToPoint(grid: Grid, cell: Cell): Point {
+  return { x: grid.originX + cell.col * CELL_SIZE, y: grid.originY + cell.row * CELL_SIZE };
 }
 
 function boxToCells(grid: Grid, box: Box): Set<string> {
@@ -104,8 +122,25 @@ function directionsEqual(a: Point | null, b: Point): boolean {
   return !!a && a.x === b.x && a.y === b.y;
 }
 
-function heuristic(a: { col: number; row: number }, b: { col: number; row: number }): number {
+function heuristic(a: Cell, b: Cell): number {
   return Math.abs(a.col - b.col) + Math.abs(a.row - b.row);
+}
+
+// Avance cellule par cellule dans une direction fixe, en s'arrêtant net
+// si la cellule suivante est bloquée (une autre boîte est trop proche du
+// port) — garantit qu'un tronçon perpendiculaire ne traverse jamais un
+// obstacle, même s'il ne peut pas atteindre sa longueur idéale.
+function walkStub(grid: Grid, start: Cell, dir: Point, maxSteps: number, blocked: Set<string>): Cell[] {
+  const cells: Cell[] = [start];
+  let current = start;
+  for (let i = 0; i < maxSteps; i++) {
+    const next = { col: current.col + dir.x, row: current.row + dir.y };
+    if (next.col < 0 || next.row < 0 || next.col >= grid.cols || next.row >= grid.rows) break;
+    if (blocked.has(cellKey(next.col, next.row))) break;
+    cells.push(next);
+    current = next;
+  }
+  return cells;
 }
 
 // Recherche de chemin A* sur la grille, 4 directions, avec pénalité de
@@ -114,12 +149,12 @@ function heuristic(a: { col: number; row: number }, b: { col: number; row: numbe
 // Repli : renvoie null si aucun chemin n'existe (grille bloquée).
 function findPath(
   grid: Grid,
-  start: { col: number; row: number },
-  goal: { col: number; row: number },
+  start: Cell,
+  goal: Cell,
   startDir: Point,
   blocked: Set<string>,
   usage: Map<string, number>,
-): { col: number; row: number }[] | null {
+): Cell[] | null {
   const startKey = cellKey(start.col, start.row);
   const goalKey = cellKey(goal.col, goal.row);
   const closed = new Set<string>();
@@ -139,7 +174,7 @@ function findPath(
     const current = openList.shift()!;
     if (closed.has(current.key)) continue;
     if (current.key === goalKey) {
-      const path: { col: number; row: number }[] = [{ col: current.col, row: current.row }];
+      const path: Cell[] = [{ col: current.col, row: current.row }];
       let key = current.key;
       while (cameFrom.has(key)) {
         key = cameFrom.get(key)!;
@@ -201,23 +236,22 @@ function simplify(points: Point[]): Point[] {
   return result;
 }
 
-export function computeRoutes(nodeLookup: Map<string, InternalNode>, edges: Edge[]): Map<string, Point[]> {
+export function computeRoutes(nodes: RoutingNode[], edges: RoutingEdge[]): Map<string, Point[]> {
   const routes = new Map<string, Point[]>();
   const usage = new Map<string, number>();
+  if (nodes.length === 0) return routes;
 
-  const measuredNodes = Array.from(nodeLookup.values()).filter((n) => n.internals.handleBounds && n.measured?.width);
-  if (measuredNodes.length === 0) return routes;
+  const nodesById = new Map(nodes.map((n) => [n.id, n]));
 
-  const boxes = measuredNodes.map((n) => ({ id: n.id, box: nodeBox(n) }));
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-  for (const { box } of boxes) {
-    minX = Math.min(minX, box.x);
-    minY = Math.min(minY, box.y);
-    maxX = Math.max(maxX, box.x + box.width);
-    maxY = Math.max(maxY, box.y + box.height);
+  for (const n of nodes) {
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + n.width);
+    maxY = Math.max(maxY, n.y + n.height);
   }
   minX -= GRID_PADDING;
   minY -= GRID_PADDING;
@@ -232,17 +266,17 @@ export function computeRoutes(nodeLookup: Map<string, InternalNode>, edges: Edge
   };
 
   const blockedByNode = new Map<string, Set<string>>();
-  for (const { id, box } of boxes) {
-    blockedByNode.set(id, boxToCells(grid, inflate(box, NODE_MARGIN)));
+  for (const n of nodes) {
+    blockedByNode.set(n.id, boxToCells(grid, inflate({ x: n.x, y: n.y, width: n.width, height: n.height }, NODE_MARGIN)));
   }
 
   for (const edge of edges) {
-    const sourceNode = nodeLookup.get(edge.source);
-    const targetNode = nodeLookup.get(edge.target);
+    const sourceNode = nodesById.get(edge.source);
+    const targetNode = nodesById.get(edge.target);
     if (!sourceNode || !targetNode) continue;
 
-    const sourceHandle = findHandle(sourceNode, edge.sourceHandle);
-    const targetHandle = findHandle(targetNode, edge.targetHandle);
+    const sourceHandle = sourceNode.handles.find((h) => h.id === edge.sourceHandle);
+    const targetHandle = targetNode.handles.find((h) => h.id === edge.targetHandle);
     if (!sourceHandle || !targetHandle) continue;
 
     const startPoint = handleCenter(sourceNode, sourceHandle);
@@ -250,31 +284,39 @@ export function computeRoutes(nodeLookup: Map<string, InternalNode>, edges: Edge
     const startDir = DIRECTION_VECTOR[sourceHandle.position];
     const endDir = DIRECTION_VECTOR[targetHandle.position];
 
-    const stubStart: Point = { x: startPoint.x + startDir.x * STUB_LENGTH, y: startPoint.y + startDir.y * STUB_LENGTH };
-    const stubEnd: Point = { x: endPoint.x + endDir.x * STUB_LENGTH, y: endPoint.y + endDir.y * STUB_LENGTH };
-
     const blocked = new Set<string>();
     for (const [nodeId, cells] of blockedByNode) {
       if (nodeId === edge.source || nodeId === edge.target) continue;
       for (const c of cells) blocked.add(c);
     }
 
-    const startCell = pointToCell(grid, stubStart);
-    const goalCell = pointToCell(grid, stubEnd);
-    const cellPath = findPath(grid, startCell, goalCell, startDir, blocked, usage);
+    const startStubCells = walkStub(grid, pointToCell(grid, startPoint), startDir, STUB_LENGTH_CELLS, blocked);
+    const endStubCells = walkStub(grid, pointToCell(grid, endPoint), endDir, STUB_LENGTH_CELLS, blocked);
+
+    const aStarStart = startStubCells[startStubCells.length - 1];
+    const aStarGoal = endStubCells[endStubCells.length - 1];
+    const cellPath = findPath(grid, aStarStart, aStarGoal, startDir, blocked, usage);
 
     let waypoints: Point[];
+    const usedCells: Cell[] = [...startStubCells];
     if (cellPath) {
-      const gridPoints = cellPath.map((c) => cellToPoint(grid, c.col, c.row));
-      waypoints = simplify([startPoint, stubStart, ...gridPoints, stubEnd, endPoint]);
-      for (const c of cellPath) {
-        const key = cellKey(c.col, c.row);
-        usage.set(key, (usage.get(key) ?? 0) + 1);
-      }
+      usedCells.push(...cellPath.slice(1));
+      usedCells.push(...[...endStubCells].reverse().slice(1));
+      const middlePoints = cellPath.map((c) => cellToPoint(grid, c));
+      const endStubPoints = [...endStubCells].reverse().map((c) => cellToPoint(grid, c));
+      waypoints = simplify([startPoint, ...middlePoints, ...endStubPoints, endPoint]);
     } else {
       // repli si aucun chemin n'a été trouvé (grille bloquée) : au moins
       // respecter les tronçons perpendiculaires en sortie/entrée de port
-      waypoints = [startPoint, stubStart, stubEnd, endPoint];
+      usedCells.push(...[...endStubCells].reverse());
+      const stubPoints = startStubCells.map((c) => cellToPoint(grid, c));
+      const endStubPoints = [...endStubCells].reverse().map((c) => cellToPoint(grid, c));
+      waypoints = simplify([startPoint, ...stubPoints, ...endStubPoints, endPoint]);
+    }
+
+    for (const c of usedCells) {
+      const key = cellKey(c.col, c.row);
+      usage.set(key, (usage.get(key) ?? 0) + 1);
     }
 
     routes.set(edge.id, waypoints);
