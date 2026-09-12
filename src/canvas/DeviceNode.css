@@ -1,0 +1,35 @@
+/* Mise en forme purement fonctionnelle (lisibilité minimale) — le design
+   visuel définitif revient à l'utilisateur, à remplacer librement. */
+
+.device-node {
+  background: #fff;
+  border: 1px solid #999;
+  border-radius: 4px;
+  font-size: 12px;
+  min-width: 140px;
+}
+
+.device-node-title {
+  padding: 4px 8px;
+  font-weight: 600;
+  border-bottom: 1px solid #ccc;
+  white-space: nowrap;
+}
+
+.device-node-body {
+  display: flex;
+  justify-content: space-between;
+}
+
+.device-node-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.device-node-port {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
