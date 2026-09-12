@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -7,6 +7,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  useStore,
   type Connection,
   type Edge,
 } from "@xyflow/react";
@@ -15,8 +16,12 @@ import { catalog } from "../domain/catalog";
 import { DeviceNode, type DeviceNodeType } from "./DeviceNode";
 import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
+import { PatchCableEdge } from "./PatchCableEdge";
+import { computeRoutes } from "./routing";
 
 const nodeTypes = { device: DeviceNode };
+const edgeTypes = { patchCable: PatchCableEdge };
+const defaultEdgeOptions = { type: "patchCable" };
 
 let nodeIdCounter = 0;
 function nextNodeId(): string {
@@ -28,6 +33,16 @@ function FlowCanvasInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState<DeviceNodeType>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition } = useReactFlow();
+  const nodeLookup = useStore((state) => state.nodeLookup);
+
+  // Le routage (évitement des boîtes, anti-chevauchement) est recalculé
+  // pour tous les câbles dès qu'un nœud bouge ou qu'un câble change ;
+  // onEdgesChange/onConnect continuent d'agir sur `edges`, pas sur ce
+  // tableau dérivé qui ne sert qu'à l'affichage.
+  const routedEdges = useMemo(() => {
+    const routes = computeRoutes(nodeLookup, edges);
+    return edges.map((edge) => ({ ...edge, data: { ...edge.data, path: routes.get(edge.id) } }));
+  }, [nodeLookup, edges]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -65,14 +80,15 @@ function FlowCanvasInner() {
     <div style={{ width: "100%", height: "100%" }} onDragOver={onDragOver} onDrop={onDrop}>
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={routedEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         isValidConnection={createIsValidConnection(nodes, edges)}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         connectionMode="loose"
-        defaultEdgeOptions={{ type: "smoothstep" }}
+        defaultEdgeOptions={defaultEdgeOptions}
       >
         <Background />
       </ReactFlow>
