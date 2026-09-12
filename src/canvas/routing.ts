@@ -284,18 +284,27 @@ export function computeRoutes(nodes: RoutingNode[], edges: RoutingEdge[]): Map<s
     const startDir = DIRECTION_VECTOR[sourceHandle.position];
     const endDir = DIRECTION_VECTOR[targetHandle.position];
 
-    const blocked = new Set<string>();
+    // Chaque tronçon de sortie/entrée ignore uniquement la boîte de SON
+    // PROPRE appareil (pour pouvoir la quitter) ; le trajet principal, lui,
+    // respecte les deux boîtes — sinon le câble peut couper à travers
+    // l'intérieur de l'appareil cible pour l'atteindre par un autre côté.
+    const blockedForSourceStub = new Set<string>();
+    const blockedForTargetStub = new Set<string>();
+    const blockedForSearch = new Set<string>();
     for (const [nodeId, cells] of blockedByNode) {
-      if (nodeId === edge.source || nodeId === edge.target) continue;
-      for (const c of cells) blocked.add(c);
+      for (const c of cells) {
+        blockedForSearch.add(c);
+        if (nodeId !== edge.source) blockedForSourceStub.add(c);
+        if (nodeId !== edge.target) blockedForTargetStub.add(c);
+      }
     }
 
-    const startStubCells = walkStub(grid, pointToCell(grid, startPoint), startDir, STUB_LENGTH_CELLS, blocked);
-    const endStubCells = walkStub(grid, pointToCell(grid, endPoint), endDir, STUB_LENGTH_CELLS, blocked);
+    const startStubCells = walkStub(grid, pointToCell(grid, startPoint), startDir, STUB_LENGTH_CELLS, blockedForSourceStub);
+    const endStubCells = walkStub(grid, pointToCell(grid, endPoint), endDir, STUB_LENGTH_CELLS, blockedForTargetStub);
 
     const aStarStart = startStubCells[startStubCells.length - 1];
     const aStarGoal = endStubCells[endStubCells.length - 1];
-    const cellPath = findPath(grid, aStarStart, aStarGoal, startDir, blocked, usage);
+    const cellPath = findPath(grid, aStarStart, aStarGoal, startDir, blockedForSearch, usage);
 
     let waypoints: Point[];
     const usedCells: Cell[] = [...startStubCells];

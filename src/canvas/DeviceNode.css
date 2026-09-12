@@ -30,6 +30,16 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 6px;
+  padding-block: 2px;
   white-space: nowrap;
+}
+
+/* Pas de rembourrage du côté qui touche la bordure du nœud : c'est ce
+   qui permet au cercle du port de se centrer exactement dessus. */
+.device-node-column:first-child .device-node-port {
+  padding-right: 6px;
+}
+
+.device-node-column:last-child .device-node-port {
+  padding-left: 6px;
 }
