@@ -1,7 +1,13 @@
 import type { Port, PortDirection, Protocol } from "./equipment";
 
+// Paires de protocoles différents mais physiquement raccordables entre
+// eux (ex. Aux et Analog sont tous deux de l'audio analogique standard,
+// juste routés différemment sur la console).
+const compatibleProtocolPairs: [Protocol, Protocol][] = [["Aux", "Analog"]];
+
 function protocolsMatch(a: Protocol, b: Protocol): boolean {
-  return a === b;
+  if (a === b) return true;
+  return compatibleProtocolPairs.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
 }
 
 function directionsCompatible(a: PortDirection, b: PortDirection): boolean {
