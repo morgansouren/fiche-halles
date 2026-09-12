@@ -11,7 +11,8 @@ export type Protocol =
   | "Ethernet"
   | "MIDI"
   | "WordClock"
-  | "Ultranet";
+  | "Ultranet"
+  | "VideoSync";
 
 export type PortDirection = "in" | "out" | "inout";
 
