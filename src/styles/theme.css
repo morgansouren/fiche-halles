@@ -43,6 +43,13 @@
   --bp-signal-wordclock:  oklch(78% 0.13 110); /* olive/citron */
   --bp-signal-other:      oklch(72% 0.02 240); /* gris neutre */
 
+  /* protocoles à rayures (deux couleurs franches, pas de la même famille
+     pastel que les autres — convention volontairement distincte) */
+  --bp-signal-speakon-a:  #050505;             /* noir */
+  --bp-signal-speakon-b:  oklch(62% 0.19 25);  /* rouge */
+  --bp-signal-snake-a:    oklch(80% 0.17 145); /* vert */
+  --bp-signal-snake-b:    oklch(88% 0.17 95);  /* jaune */
+
   --bp-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
   --bp-grid-size: 32px;
   --bp-radius: 0px;          /* esprit calque de plan, pas de coins arrondis */
@@ -73,6 +80,17 @@
   --signal-analog:    var(--bp-signal-analog);
   --signal-wordclock: var(--bp-signal-wordclock);
   --signal-other:     var(--bp-signal-other);
+
+  /* protocoles à rayures : deux couleurs à plat (utilisées pour les
+     câbles, rendus en deux tracés superposés) + un dégradé composé
+     (utilisé pour les pastilles/cercles de port, qui peuvent afficher
+     un vrai motif rayé en CSS) */
+  --signal-speakon-a: var(--bp-signal-speakon-a);
+  --signal-speakon-b: var(--bp-signal-speakon-b);
+  --signal-speakon:   repeating-linear-gradient(45deg, var(--signal-speakon-a) 0 3px, var(--signal-speakon-b) 3px 6px);
+  --signal-snake-a:   var(--bp-signal-snake-a);
+  --signal-snake-b:   var(--bp-signal-snake-b);
+  --signal-snake:     repeating-linear-gradient(45deg, var(--signal-snake-a) 0 3px, var(--signal-snake-b) 3px 6px);
 
   --edge-width:       var(--bp-edge-width);
   --edge-width-hover: 3px;

@@ -1,5 +1,6 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import type { DeviceModel, Port } from "../domain/equipment";
+import { protocolBackground } from "./protocolColors";
 import "./DeviceNode.css";
 
 export type DeviceNodeType = Node<{ model: DeviceModel }, "device">;
@@ -21,20 +22,32 @@ function handleTypeFor(port: Port): "source" | "target" {
 // pourcentage ; ici on le fixe en flux normal, à cheval sur la bordure
 // du nœud (moitié dedans, moitié dehors), comme un vrai connecteur.
 const HANDLE_SIZE = 8;
-const leftHandleStyle = {
-  position: "static" as const,
-  transform: "none",
-  width: HANDLE_SIZE,
-  height: HANDLE_SIZE,
-  marginLeft: -HANDLE_SIZE / 2,
-};
-const rightHandleStyle = {
-  position: "static" as const,
-  transform: "none",
-  width: HANDLE_SIZE,
-  height: HANDLE_SIZE,
-  marginRight: -HANDLE_SIZE / 2,
-};
+
+// La couleur du cercle vient du protocole du port (src/canvas/protocolColors.ts,
+// tokens définis dans src/styles/theme.css) — c'est ce qui permet
+// d'identifier un port au coup d'œil sans lire son étiquette.
+function leftHandleStyle(port: Port) {
+  return {
+    position: "static" as const,
+    transform: "none",
+    width: HANDLE_SIZE,
+    height: HANDLE_SIZE,
+    marginLeft: -HANDLE_SIZE / 2,
+    background: protocolBackground(port.protocol),
+    borderColor: "rgba(0, 0, 0, 0.4)",
+  };
+}
+function rightHandleStyle(port: Port) {
+  return {
+    position: "static" as const,
+    transform: "none",
+    width: HANDLE_SIZE,
+    height: HANDLE_SIZE,
+    marginRight: -HANDLE_SIZE / 2,
+    background: protocolBackground(port.protocol),
+    borderColor: "rgba(0, 0, 0, 0.4)",
+  };
+}
 
 export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
   const { model } = data;
@@ -48,7 +61,7 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
         <div className="device-node-column">
           {leftPorts.map((port) => (
             <div className="device-node-port" key={port.id}>
-              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Left} style={leftHandleStyle} />
+              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Left} style={leftHandleStyle(port)} />
               <span className="device-node-port-label">{port.label}</span>
             </div>
           ))}
@@ -57,7 +70,7 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
           {rightPorts.map((port) => (
             <div className="device-node-port" key={port.id}>
               <span className="device-node-port-label">{port.label}</span>
-              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Right} style={rightHandleStyle} />
+              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Right} style={rightHandleStyle(port)} />
             </div>
           ))}
         </div>

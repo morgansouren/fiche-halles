@@ -17,6 +17,7 @@ import { DeviceNode, type DeviceNodeType } from "./DeviceNode";
 import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
 import { PatchCableEdge } from "./PatchCableEdge";
+import { protocolStrokeColors } from "./protocolColors";
 import { computeRoutes, type HandleInfo, type RoutingNode } from "./routing";
 
 const nodeTypes = { device: DeviceNode };
@@ -67,7 +68,15 @@ function FlowCanvasInner() {
     });
 
     const routes = computeRoutes(routingNodes, edges);
-    return edges.map((edge) => ({ ...edge, data: { ...edge.data, path: routes.get(edge.id) } }));
+    return edges.map((edge) => {
+      // La couleur du câble suit le protocole du port de départ (les deux
+      // bouts partagent forcément le même protocole ou une paire compatible
+      // comme Aux/Analog, qui rendent d'ailleurs dans la même couleur).
+      const sourceNode = nodes.find((n) => n.id === edge.source);
+      const sourcePort = sourceNode?.data.model.ports.find((p) => p.id === edge.sourceHandle);
+      const strokeColors = sourcePort ? protocolStrokeColors(sourcePort.protocol) : undefined;
+      return { ...edge, data: { ...edge.data, path: routes.get(edge.id), strokeColors } };
+    });
   }, [nodes, edges, storeApi]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
