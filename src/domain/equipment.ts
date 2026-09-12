@@ -13,7 +13,8 @@ export type Protocol =
   | "WordClock"
   | "Ultranet"
   | "VideoSync"
-  | "Aux";
+  | "Aux"
+  | "Adat";
 
 export type PortDirection = "in" | "out" | "inout";
 
