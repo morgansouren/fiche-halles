@@ -17,7 +17,24 @@ function handleTypeFor(port: Port): "source" | "target" {
 // positionné en pourcentage sur toute la hauteur du nœud) : la boîte
 // grandit donc automatiquement pour accueillir n'importe quel nombre de
 // ports, sans chevauchement, quel que soit le modèle d'appareil.
-const inlineHandleStyle = { position: "static" as const, transform: "none" };
+// Un handle React Flow par défaut fait 6px et se positionne par
+// pourcentage ; ici on le fixe en flux normal, à cheval sur la bordure
+// du nœud (moitié dedans, moitié dehors), comme un vrai connecteur.
+const HANDLE_SIZE = 8;
+const leftHandleStyle = {
+  position: "static" as const,
+  transform: "none",
+  width: HANDLE_SIZE,
+  height: HANDLE_SIZE,
+  marginLeft: -HANDLE_SIZE / 2,
+};
+const rightHandleStyle = {
+  position: "static" as const,
+  transform: "none",
+  width: HANDLE_SIZE,
+  height: HANDLE_SIZE,
+  marginRight: -HANDLE_SIZE / 2,
+};
 
 export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
   const { model } = data;
@@ -31,7 +48,7 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
         <div className="device-node-column">
           {leftPorts.map((port) => (
             <div className="device-node-port" key={port.id}>
-              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Left} style={inlineHandleStyle} />
+              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Left} style={leftHandleStyle} />
               <span className="device-node-port-label">{port.label}</span>
             </div>
           ))}
@@ -40,7 +57,7 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
           {rightPorts.map((port) => (
             <div className="device-node-port" key={port.id}>
               <span className="device-node-port-label">{port.label}</span>
-              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Right} style={inlineHandleStyle} />
+              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Right} style={rightHandleStyle} />
             </div>
           ))}
         </div>
