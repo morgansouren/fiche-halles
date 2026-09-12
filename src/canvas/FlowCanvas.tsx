@@ -3,6 +3,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   Background,
+  ConnectionMode,
   addEdge,
   useNodesState,
   useEdgesState,
@@ -122,7 +123,7 @@ function FlowCanvasInner() {
         isValidConnection={createIsValidConnection(nodes, edges)}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        connectionMode="loose"
+        connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={defaultEdgeOptions}
       >
         <Background />

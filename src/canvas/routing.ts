@@ -44,8 +44,8 @@ export interface RoutingEdge {
   id: string;
   source: string;
   target: string;
-  sourceHandle: string | null | undefined;
-  targetHandle: string | null | undefined;
+  sourceHandle?: string | null;
+  targetHandle?: string | null;
 }
 
 const CELL_SIZE = 10;
