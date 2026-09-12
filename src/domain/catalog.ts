@@ -416,4 +416,22 @@ export const catalog: DeviceModel[] = [
       { id: "ultranet", label: "Ultranet", protocol: "Ultranet", direction: "inout" },
     ],
   },
+  {
+    id: "dn9680",
+    name: "DN9680",
+    category: "converter",
+    ports: [
+      // Inout
+      { id: "aes50-1", label: "AES50 1", protocol: "AES50", direction: "inout" },
+      { id: "aes50-2", label: "AES50 2", protocol: "AES50", direction: "inout" },
+      { id: "aes50-3", label: "AES50 3", protocol: "AES50", direction: "inout" },
+      { id: "aes50-4", label: "AES50 4", protocol: "AES50", direction: "inout" },
+      { id: "aes50-5", label: "AES50 5", protocol: "AES50", direction: "inout" },
+      { id: "aes50-6", label: "AES50 6", protocol: "AES50", direction: "inout" },
+      { id: "aes50-7", label: "AES50 7", protocol: "AES50", direction: "inout" },
+      { id: "aes50-8", label: "AES50 8", protocol: "AES50", direction: "inout" },
+      { id: "snake", label: "Snake", protocol: "Snake", direction: "inout", media: "optique ou cuivre" },
+      { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
+    ],
+  },
 ];
