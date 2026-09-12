@@ -29,6 +29,7 @@
 .device-node-port {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 4px;
   padding-block: 2px;
   white-space: nowrap;

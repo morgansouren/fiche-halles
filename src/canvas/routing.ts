@@ -317,6 +317,7 @@ export function computeRoutes(nodes: RoutingNode[], edges: RoutingEdge[]): Map<s
     } else {
       // repli si aucun chemin n'a été trouvé (grille bloquée) : au moins
       // respecter les tronçons perpendiculaires en sortie/entrée de port
+      console.warn(`[routing] findPath a échoué pour ${edge.id} — repli en ligne droite entre les tronçons`);
       usedCells.push(...[...endStubCells].reverse());
       const stubPoints = startStubCells.map((c) => cellToPoint(grid, c));
       const endStubPoints = [...endStubCells].reverse().map((c) => cellToPoint(grid, c));
