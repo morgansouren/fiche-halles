@@ -9,6 +9,7 @@ const categoryLabels: Record<DeviceModel["category"], string> = {
   console: "Consoles",
   converter: "Boîtiers / convertisseurs",
   speaker: "Enceintes",
+  amplifier: "Amplificateurs",
 };
 
 function handleDragStart(event: React.DragEvent, model: DeviceModel) {

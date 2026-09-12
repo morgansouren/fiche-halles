@@ -14,7 +14,8 @@ export type Protocol =
   | "Ultranet"
   | "VideoSync"
   | "Aux"
-  | "Adat";
+  | "Adat"
+  | "Speakon";
 
 export type PortDirection = "in" | "out" | "inout";
 
@@ -28,7 +29,7 @@ export interface Port {
   media?: string;
 }
 
-export type DeviceCategory = "console" | "converter" | "speaker";
+export type DeviceCategory = "console" | "converter" | "speaker" | "amplifier";
 
 export interface DeviceModel {
   id: string;
