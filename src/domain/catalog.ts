@@ -434,4 +434,22 @@ export const catalog: DeviceModel[] = [
       { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
     ],
   },
+  {
+    id: "dn9650",
+    name: "DN9650",
+    category: "converter",
+    ports: [
+      // In
+      { id: "wordclock-in", label: "Word Clock In", protocol: "WordClock", direction: "in" },
+      // Out
+      { id: "wordclock-out", label: "Word Clock Out", protocol: "WordClock", direction: "out" },
+      // Inout
+      { id: "aes50-1", label: "AES50 1", protocol: "AES50", direction: "inout" },
+      { id: "aes50-2", label: "AES50 2", protocol: "AES50", direction: "inout" },
+      { id: "aes50-3", label: "AES50 3", protocol: "AES50", direction: "inout" },
+      { id: "dante-primary", label: "Dante Primary", protocol: "Dante", direction: "inout" },
+      { id: "dante-secondary", label: "Dante Secondary", protocol: "Dante", direction: "inout" },
+      { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
+    ],
+  },
 ];
