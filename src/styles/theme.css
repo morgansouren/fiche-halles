@@ -1,0 +1,134 @@
+/*
+  fiche-halles — thème "Blueprint"
+  ================================
+  Architecture en 3 couches, pour que la future variante "print" (claire,
+  imprimable) n'ait besoin de retoucher QUE la couche 2 (sémantique) :
+
+  1. PRIMITIVES     — valeurs brutes du thème Blueprint (couleurs, tailles).
+                       Un futur thème "print" aura son propre bloc de
+                       primitives, jamais celui-ci.
+  2. SÉMANTIQUE      — ce que chaque token *signifie* dans le domaine
+                       (couleur d'un type de signal, fond du canevas...).
+                       C'est la seule couche que les composants (cartes,
+                       légende, ports, câbles) doivent lire. Un thème
+                       "print" redéfinit ces mêmes noms avec d'autres
+                       valeurs — le reste du code ne change pas.
+  3. PONT REACT FLOW — recopie les tokens sémantiques dans les variables
+                       --xy-* que la librairie lit réellement, scopées à
+                       .react-flow (cf. doc theming React Flow : ces
+                       variables sont lues sous .react-flow ET :root).
+*/
+
+:root {
+  /* ---------- 1. PRIMITIVES (Blueprint) ---------- */
+  --bp-navy-950: #0a1e33;
+  --bp-navy-900: #0d2540;
+  --bp-navy-800: #15335299; /* utilisé pour la grille, faible opacité */
+  --bp-line-700: #2c5580;
+  --bp-line-600: #3a6fa0;
+  --bp-line-500: #244a6e;   /* séparateurs pointillés dans les cartes */
+
+  --bp-text-100: #e6f4ff;   /* titres, texte primaire */
+  --bp-text-300: #9fc6e8;   /* texte secondaire (lignes de ports) */
+  --bp-text-500: #6f9bc4;   /* légende, texte tertiaire */
+
+  /* palette catégorielle par protocole — oklch, même L/C, teinte variée
+     (cf. swatch de vérification) ; "autre" reste volontairement neutre
+     puisque c'est un fourre-tout, pas un protocole identifié */
+  --bp-signal-aes50:      oklch(78% 0.13 195); /* turquoise */
+  --bp-signal-dante:      oklch(78% 0.13 255); /* bleu */
+  --bp-signal-ethernet:   oklch(78% 0.13 305); /* violet */
+  --bp-signal-midi:       oklch(78% 0.13 345); /* rose */
+  --bp-signal-analog:     oklch(78% 0.13 50);  /* ambre */
+  --bp-signal-wordclock:  oklch(78% 0.13 110); /* olive/citron */
+  --bp-signal-other:      oklch(72% 0.02 240); /* gris neutre */
+
+  --bp-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  --bp-grid-size: 32px;
+  --bp-radius: 0px;          /* esprit calque de plan, pas de coins arrondis */
+  --bp-border-width: 1px;
+  --bp-edge-width: 2px;
+
+  /* ---------- 2. SÉMANTIQUE (ce que les composants consomment) ---------- */
+  --canvas-bg:              var(--bp-navy-950);
+  --canvas-grid-line:       var(--bp-navy-800);
+  --canvas-grid-size:       var(--bp-grid-size);
+
+  --surface-panel-bg:       rgba(255, 255, 255, 0.03);
+  --surface-panel-border:   var(--bp-line-600);
+  --surface-panel-radius:   var(--bp-radius);
+  --surface-header-border:  var(--bp-line-700);
+  --surface-row-divider:    var(--bp-line-500);
+
+  --text-primary:   var(--bp-text-100);
+  --text-secondary: var(--bp-text-300);
+  --text-tertiary:  var(--bp-text-500);
+  --font-technical: var(--bp-font-mono);
+
+  /* protocole → couleur (câbles, pastilles de port, légende) */
+  --signal-aes50:     var(--bp-signal-aes50);
+  --signal-dante:     var(--bp-signal-dante);
+  --signal-ethernet:  var(--bp-signal-ethernet);
+  --signal-midi:      var(--bp-signal-midi);
+  --signal-analog:    var(--bp-signal-analog);
+  --signal-wordclock: var(--bp-signal-wordclock);
+  --signal-other:     var(--bp-signal-other);
+
+  --edge-width:       var(--bp-edge-width);
+  --edge-width-hover: 3px;
+  --port-marker-size: 8px; /* carré de couleur devant le nom du port */
+
+  /* accent générique (liens, focus, sélection...) */
+  --accent: var(--bp-signal-aes50);
+}
+
+/* ---------- 3. PONT REACT FLOW ---------- */
+/* Recopie des tokens sémantiques vers les variables lues par la librairie.
+   Garder ce bloc synchronisé à la main si les tokens ci-dessus changent —
+   il n'y a pas d'indirection automatique possible en CSS pur. */
+.react-flow {
+  --xy-background-color-default:        var(--canvas-bg);
+  --xy-background-pattern-dots-color-default: var(--canvas-grid-line);
+  --xy-background-pattern-lines-color-default: var(--canvas-grid-line);
+
+  --xy-node-background-color-default:   var(--surface-panel-bg);
+  --xy-node-border-default:             var(--bp-border-width) solid var(--surface-panel-border);
+  --xy-node-color-default:              var(--text-primary);
+  --xy-node-boxshadow-selected-default: 0 0 0 1.5px var(--accent);
+
+  --xy-edge-stroke-default:             var(--bp-line-600);
+  --xy-edge-stroke-width-default:       var(--edge-width);
+  --xy-edge-stroke-selected-default:    var(--accent);
+  --xy-connectionline-stroke-default:   var(--accent);
+  --xy-connectionline-stroke-width-default: var(--edge-width);
+
+  --xy-handle-background-color-default: var(--bp-navy-950);
+  --xy-handle-border-color-default:     var(--bp-line-600);
+
+  --xy-minimap-background-color-default: var(--bp-navy-900);
+  --xy-controls-button-background-color-default: var(--bp-navy-900);
+  --xy-controls-button-color-default:    var(--text-secondary);
+  --xy-controls-button-border-color-default: var(--bp-line-700);
+}
+
+/*
+  Convention "ligne de port" (dans les cartes d'équipement) :
+  chaque ligne = un carré --port-marker-size coloré au token du protocole
+  de cette ligne, suivi du nom du port, puis la valeur (sens + nombre de
+  canaux) coloriée avec le MÊME token à droite. La couleur du carré, de la
+  valeur, du câble qui en part et de la puce de légende sont donc TOUJOURS
+  le même token --signal-* pour un protocole donné : c'est ce qui permet
+  d'identifier un port au coup d'œil sans lire l'étiquette.
+
+  Emplacement prévu pour la variante "print" (à venir) :
+
+  [data-theme="print"] {
+    --canvas-bg: #ffffff;
+    --surface-panel-bg: #ffffff;
+    --surface-panel-border: #1a1a1a;
+    --text-primary: #111111;
+    ...
+    -- seuls les tokens de la couche 2 sont redéfinis ici ;
+    -- aucune carte, câble ou légende n'a besoin d'être retouché.
+  }
+*/
