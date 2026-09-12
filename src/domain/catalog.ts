@@ -469,4 +469,21 @@ export const catalog: DeviceModel[] = [
       { id: "speakon-4", label: "Speakon 4", protocol: "Speakon", direction: "out" },
     ],
   },
+  {
+    id: "nxamp4x1",
+    name: "Nxamp4x1",
+    category: "amplifier",
+    ports: [
+      // In
+      { id: "analog-in-1", label: "Analog In 1", protocol: "Analog", direction: "in" },
+      { id: "analog-in-2", label: "Analog In 2", protocol: "Analog", direction: "in" },
+      { id: "analog-in-3", label: "Analog In 3", protocol: "Analog", direction: "in" },
+      { id: "analog-in-4", label: "Analog In 4", protocol: "Analog", direction: "in" },
+      // Out
+      { id: "speakon-1", label: "Speakon 1", protocol: "Speakon", direction: "out" },
+      { id: "speakon-2", label: "Speakon 2", protocol: "Speakon", direction: "out" },
+      { id: "speakon-3", label: "Speakon 3", protocol: "Speakon", direction: "out" },
+      { id: "speakon-4", label: "Speakon 4", protocol: "Speakon", direction: "out" },
+    ],
+  },
 ];
