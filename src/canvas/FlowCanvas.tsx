@@ -72,6 +72,7 @@ function FlowCanvasInner() {
         isValidConnection={createIsValidConnection(nodes, edges)}
         nodeTypes={nodeTypes}
         connectionMode="loose"
+        defaultEdgeOptions={{ type: "smoothstep" }}
       >
         <Background />
       </ReactFlow>
