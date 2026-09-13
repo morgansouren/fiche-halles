@@ -163,8 +163,12 @@
     0 0 12px 3px var(--accent);
 }
 
+/* --edge-color est posé en style inline par PatchCableEdge.tsx (la
+   couleur du câble n'est connue qu'au niveau du composant) — le halo au
+   survol reprend donc la teinte propre à CE câble, pas une couleur fixe. */
 .react-flow__edge:hover .react-flow__edge-path {
   stroke-width: var(--edge-width-hover);
+  filter: drop-shadow(0 0 2px var(--edge-color, var(--accent))) drop-shadow(0 0 8px var(--edge-color, var(--accent)));
 }
 
 /* Même halo sur un câble sélectionné : filter/drop-shadow est l'équivalent

@@ -1,4 +1,5 @@
 import { BaseEdge, type Edge, type EdgeProps } from "@xyflow/react";
+import type { CSSProperties } from "react";
 import type { Point } from "./routing";
 
 export interface StrokeColors {
@@ -7,6 +8,12 @@ export interface StrokeColors {
 }
 
 export type PatchCableEdgeType = Edge<{ path?: Point[]; strokeColors?: StrokeColors }, "patchCable">;
+
+// CSSProperties n'autorise pas les propriétés personnalisées par défaut ;
+// on l'étend pour pouvoir poser --edge-color en style inline (lu ensuite
+// par la règle de survol dans theme.css, qui ne peut pas connaître la
+// couleur du câble autrement qu'en CSS pur).
+type EdgeStyle = CSSProperties & { "--edge-color"?: string };
 
 function pointsToPath(points: Point[]): string {
   return points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
@@ -25,9 +32,11 @@ const STRIPE_DASH = 6;
 // Sélectionné : on bascule sur une couleur unie d'accent plutôt que la
 // couleur du protocole — sinon la couleur de sélection native de React
 // Flow ne se verrait jamais (un style inline gagne toujours contre sa
-// règle CSS `.selected`). L'épaisseur au survol, elle, vient d'une règle
-// CSS sur `.react-flow__edge-path` (voir theme.css) : on ne fixe donc
-// jamais `strokeWidth` en inline ici, pour laisser cette règle s'appliquer.
+// règle CSS `.selected`). L'épaisseur et le halo au survol, eux, viennent
+// d'une règle CSS sur `.react-flow__edge-path` (voir theme.css) : on ne
+// fixe donc jamais `strokeWidth`/`filter` en inline ici, pour laisser
+// cette règle s'appliquer — --edge-color lui indique juste quelle teinte
+// utiliser pour CE câble.
 export function PatchCableEdge({ data, sourceX, sourceY, targetX, targetY, markerEnd, style, selected }: EdgeProps<PatchCableEdgeType>) {
   const points = data?.path;
   const path =
@@ -43,11 +52,18 @@ export function PatchCableEdge({ data, sourceX, sourceY, targetX, targetY, marke
   }
 
   const colors = data?.strokeColors;
+  const edgeColor = colors?.colorA ?? "var(--xy-edge-stroke-default)";
 
   if (colors?.colorB) {
+    const stripedStyle: EdgeStyle = {
+      ...style,
+      stroke: colors.colorA,
+      strokeDasharray: STRIPE_DASH,
+      "--edge-color": edgeColor,
+    };
     return (
       <>
-        <BaseEdge path={path} markerEnd={markerEnd} style={{ ...style, stroke: colors.colorA, strokeDasharray: STRIPE_DASH }} />
+        <BaseEdge path={path} markerEnd={markerEnd} style={stripedStyle} />
         <path
           className="react-flow__edge-path"
           d={path}
@@ -59,5 +75,6 @@ export function PatchCableEdge({ data, sourceX, sourceY, targetX, targetY, marke
     );
   }
 
-  return <BaseEdge path={path} markerEnd={markerEnd} style={colors ? { ...style, stroke: colors.colorA } : style} />;
+  const soloStyle: EdgeStyle = { ...style, stroke: edgeColor, "--edge-color": edgeColor };
+  return <BaseEdge path={path} markerEnd={markerEnd} style={soloStyle} />;
 }
