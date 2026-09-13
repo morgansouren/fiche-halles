@@ -79,3 +79,36 @@
 .device-node-column:last-child .device-node-port {
   padding-left: 6px;
 }
+
+/* Un handle React Flow par défaut se positionne en pourcentage avec un
+   transform de centrage ; on l'annule ici (en flux normal, à cheval sur
+   la bordure — cf. handleStyle() dans DeviceNode.tsx). Rien de tout ça
+   n'est en style inline, exprès : ça laisse la règle :hover ci-dessous
+   agrandir le cercle et lui ajouter un halo sans qu'un style inline ne
+   l'en empêche. */
+.device-node-handle {
+  position: static;
+  transform: none;
+  width: 8px;
+  height: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.device-node-handle-left {
+  margin-left: -4px;
+}
+
+.device-node-handle-right {
+  margin-right: -4px;
+}
+
+/* Le point d'ancrage (le centre) ne bouge pas : transform scale grandit
+   depuis le centre, donc le cercle reste bien collé à la bordure du nœud
+   tout en devenant plus facile à viser. --port-color vient du style
+   inline posé par port (voir handleStyle() dans DeviceNode.tsx). */
+.device-node-handle:hover {
+  position: relative;
+  z-index: 5;
+  transform: scale(1.8);
+  filter: drop-shadow(0 0 3px var(--port-color, var(--accent))) drop-shadow(0 0 7px var(--port-color, var(--accent)));
+}

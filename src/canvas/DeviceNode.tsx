@@ -1,8 +1,15 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
+import type { CSSProperties } from "react";
 import type { DeviceModel, Port } from "../domain/equipment";
-import { protocolBackground } from "./protocolColors";
+import { protocolBackground, protocolStrokeColors } from "./protocolColors";
 import { computePortGroups, type HiddenGroups, type PortGroupDef } from "./portVisibility";
 import "./DeviceNode.css";
+
+// CSSProperties n'autorise pas les propriétés personnalisées par défaut ;
+// on l'étend pour poser --port-color en style inline (lue ensuite par la
+// règle de survol dans DeviceNode.css, qui ne peut pas connaître la
+// couleur d'UN port précis autrement qu'en CSS pur).
+type HandleStyle = CSSProperties & { "--port-color"?: string };
 
 export type DeviceNodeType = Node<
   {
@@ -26,34 +33,17 @@ function handleTypeFor(port: Port): "source" | "target" {
 // positionné en pourcentage sur toute la hauteur du nœud) : la boîte
 // grandit donc automatiquement pour accueillir n'importe quel nombre de
 // ports, sans chevauchement, quel que soit le modèle d'appareil.
-// Un handle React Flow par défaut fait 6px et se positionne par
-// pourcentage ; ici on le fixe en flux normal, à cheval sur la bordure
-// du nœud (moitié dedans, moitié dehors), comme un vrai connecteur.
-const HANDLE_SIZE = 8;
-
-// La couleur du cercle vient du protocole du port (src/canvas/protocolColors.ts,
-// tokens définis dans src/styles/theme.css) — c'est ce qui permet
-// d'identifier un port au coup d'œil sans lire son étiquette.
-function leftHandleStyle(port: Port) {
+//
+// Ce qui est constant (taille, position, transform de base) vit dans
+// DeviceNode.css — seule la couleur varie par port, donc seule elle reste
+// en style inline ici. C'est ce qui permet à la règle de survol (grossir
+// + halo) de fonctionner : un style inline gagne toujours contre une
+// règle CSS `:hover`, donc si tout était inline, rien ne pourrait grossir
+// au survol.
+function handleStyle(port: Port): HandleStyle {
   return {
-    position: "static" as const,
-    transform: "none",
-    width: HANDLE_SIZE,
-    height: HANDLE_SIZE,
-    marginLeft: -HANDLE_SIZE / 2,
     background: protocolBackground(port.protocol),
-    borderColor: "rgba(0, 0, 0, 0.4)",
-  };
-}
-function rightHandleStyle(port: Port) {
-  return {
-    position: "static" as const,
-    transform: "none",
-    width: HANDLE_SIZE,
-    height: HANDLE_SIZE,
-    marginRight: -HANDLE_SIZE / 2,
-    background: protocolBackground(port.protocol),
-    borderColor: "rgba(0, 0, 0, 0.4)",
+    "--port-color": protocolStrokeColors(port.protocol).colorA,
   };
 }
 
@@ -119,7 +109,13 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
         <div className="device-node-column">
           {leftPorts.map((port) => (
             <div className="device-node-port" key={port.id}>
-              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Left} style={leftHandleStyle(port)} />
+              <Handle
+                id={port.id}
+                type={handleTypeFor(port)}
+                position={Position.Left}
+                className="device-node-handle device-node-handle-left"
+                style={handleStyle(port)}
+              />
               <span className="device-node-port-label">{port.label}</span>
             </div>
           ))}
@@ -128,7 +124,13 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
           {rightPorts.map((port) => (
             <div className="device-node-port" key={port.id}>
               <span className="device-node-port-label">{port.label}</span>
-              <Handle id={port.id} type={handleTypeFor(port)} position={Position.Right} style={rightHandleStyle(port)} />
+              <Handle
+                id={port.id}
+                type={handleTypeFor(port)}
+                position={Position.Right}
+                className="device-node-handle device-node-handle-right"
+                style={handleStyle(port)}
+              />
             </div>
           ))}
         </div>
