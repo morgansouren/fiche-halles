@@ -21,7 +21,14 @@ const STRIPE_DASH = 6;
 // prendre un dégradé CSS, un protocole "à rayures" (colorB défini) se
 // dessine comme deux tracés superposés au même dasharray, décalés d'un
 // cran l'un par rapport à l'autre.
-export function PatchCableEdge({ data, sourceX, sourceY, targetX, targetY, markerEnd, style }: EdgeProps<PatchCableEdgeType>) {
+//
+// Sélectionné : on bascule sur une couleur unie d'accent plutôt que la
+// couleur du protocole — sinon la couleur de sélection native de React
+// Flow ne se verrait jamais (un style inline gagne toujours contre sa
+// règle CSS `.selected`). L'épaisseur au survol, elle, vient d'une règle
+// CSS sur `.react-flow__edge-path` (voir theme.css) : on ne fixe donc
+// jamais `strokeWidth` en inline ici, pour laisser cette règle s'appliquer.
+export function PatchCableEdge({ data, sourceX, sourceY, targetX, targetY, markerEnd, style, selected }: EdgeProps<PatchCableEdgeType>) {
   const points = data?.path;
   const path =
     points && points.length >= 2
@@ -31,6 +38,10 @@ export function PatchCableEdge({ data, sourceX, sourceY, targetX, targetY, marke
           { x: targetX, y: targetY },
         ]);
 
+  if (selected) {
+    return <BaseEdge path={path} markerEnd={markerEnd} style={{ ...style, stroke: "var(--accent)" }} />;
+  }
+
   const colors = data?.strokeColors;
 
   if (colors?.colorB) {
@@ -38,14 +49,10 @@ export function PatchCableEdge({ data, sourceX, sourceY, targetX, targetY, marke
       <>
         <BaseEdge path={path} markerEnd={markerEnd} style={{ ...style, stroke: colors.colorA, strokeDasharray: STRIPE_DASH }} />
         <path
+          className="react-flow__edge-path"
           d={path}
           fill="none"
-          style={{
-            stroke: colors.colorB,
-            strokeWidth: "var(--edge-width)",
-            strokeDasharray: STRIPE_DASH,
-            strokeDashoffset: STRIPE_DASH,
-          }}
+          style={{ stroke: colors.colorB, strokeDasharray: STRIPE_DASH, strokeDashoffset: STRIPE_DASH }}
           pointerEvents="none"
         />
       </>

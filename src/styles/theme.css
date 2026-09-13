@@ -54,7 +54,7 @@
   --bp-grid-size: 32px;
   --bp-radius: 0px;          /* esprit calque de plan, pas de coins arrondis */
   --bp-border-width: 1px;
-  --bp-edge-width: 2px;
+  --bp-edge-width: 4px;
 
   /* ---------- 2. SÉMANTIQUE (ce que les composants consomment) ---------- */
   --canvas-bg:              var(--bp-navy-950);
@@ -93,7 +93,7 @@
   --signal-snake:     repeating-linear-gradient(45deg, var(--signal-snake-a) 0 3px, var(--signal-snake-b) 3px 6px);
 
   --edge-width:       var(--bp-edge-width);
-  --edge-width-hover: 3px;
+  --edge-width-hover: 8px;
   --port-marker-size: 8px; /* carré de couleur devant le nom du port */
 
   /* accent générique (liens, focus, sélection...) */
@@ -127,6 +127,32 @@
   --xy-controls-button-background-color-default: var(--bp-navy-900);
   --xy-controls-button-color-default:    var(--text-secondary);
   --xy-controls-button-border-color-default: var(--bp-line-700);
+}
+
+/* ---------- 4. RÈGLES PERSONNALISÉES ----------
+   Deux comportements que les variables --xy-* seules ne couvrent pas :
+
+   - La règle de surbrillance de sélection intégrée à React Flow ne cible
+     que ses propres types de nœuds (.react-flow__node-default, -input,
+     -output, -group) : un type personnalisé comme le nôtre
+     (.react-flow__node-device) n'est jamais concerné, quelle que soit la
+     valeur de --xy-node-boxshadow-selected-default. On écrit donc notre
+     propre règle de sélection ci-dessous.
+   - React Flow n'a tout simplement aucune règle de survol pour
+     l'épaisseur d'un câble ; --edge-width-hover ne sert donc à rien sans
+     la règle explicite ci-dessous. */
+/* .selectable ajouté uniquement pour égaler la spécificité de la règle
+   `.react-flow__node.selectable:focus { outline: none; }` de React Flow
+   (un nœud sélectionné reçoit aussi le focus du navigateur) — sans ce
+   troisième sélecteur, leur règle plus spécifique annule silencieusement
+   la nôtre. */
+.react-flow__node.selectable.selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: var(--edge-width-hover);
 }
 
 /*
