@@ -3,38 +3,71 @@ import type { Port } from "../domain/equipment";
 // Groupes de ports que l'on peut masquer/afficher depuis l'en-tête d'un
 // appareil, pour réduire la hauteur d'une carte quand on n'a pas besoin
 // de voir tous ses ports. Dante, AES50, Snake, Ethernet et Speakon restent
-// toujours visibles (portGroupFor renvoie null pour eux) — aucun bouton
+// toujours visibles (ils n'apparaissent dans aucun groupe) — aucun bouton
 // ne les masque.
-export type PortGroup = "ain" | "aout" | "axin" | "axout" | "m" | "o";
+//
+// Analog In et Analog Out sont en plus subdivisés par paquets de 8 (un
+// bouton par paquet) : un appareil avec 24 entrées analogiques (Pro1) a
+// besoin de voir seulement les quelques-unes qu'il utilise pour CE
+// montage, pas les 24 d'un coup.
 
-export const PORT_GROUPS: PortGroup[] = ["ain", "aout", "axin", "axout", "m", "o"];
-
-export const PORT_GROUP_LABELS: Record<PortGroup, string> = {
-  ain: "Ain",
-  aout: "Aout",
-  axin: "AxIn",
-  axout: "AxOut",
-  m: "M",
-  o: "O",
-};
+const CHUNK_SIZE = 8;
 
 // Regroupés sous "O" même si Word Clock a sa propre couleur dans le
 // thème : la classification par bouton n'est pas obligée de suivre
 // exactement la classification par couleur.
 const OTHER_GROUP_PROTOCOLS = new Set(["AES3", "MADI", "Ultranet", "Adat", "VideoSync", "WordClock"]);
 
-export function portGroupFor(port: Port): PortGroup | null {
-  if (port.protocol === "Analog") return port.direction === "in" ? "ain" : "aout";
-  if (port.protocol === "Aux") return port.direction === "in" ? "axin" : "axout";
-  if (port.protocol === "MIDI") return "m";
-  if (OTHER_GROUP_PROTOCOLS.has(port.protocol)) return "o";
-  return null;
+export interface PortGroupDef {
+  id: string;
+  label: string;
+  ports: Port[];
 }
 
-export type HiddenGroups = Partial<Record<PortGroup, boolean>>;
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) chunks.push(items.slice(i, i + size));
+  return chunks;
+}
+
+function rangeLabel(prefix: string, chunkIndex: number, chunkLength: number): string {
+  const start = chunkIndex * CHUNK_SIZE + 1;
+  const end = chunkIndex * CHUNK_SIZE + chunkLength;
+  return start === end ? `${prefix} ${start}` : `${prefix} ${start}-${end}`;
+}
+
+// Calcule, pour un appareil donné, la liste des groupes de ports
+// masquables (et les ports que contrôle chacun). Recalculé à partir du
+// catalogue (pur), aucun état ici — l'état "masqué/visible" vit dans les
+// données du nœud (voir FlowCanvas.tsx).
+export function computePortGroups(ports: Port[]): PortGroupDef[] {
+  const groups: PortGroupDef[] = [];
+
+  const analogIn = ports.filter((p) => p.protocol === "Analog" && p.direction === "in");
+  const analogOut = ports.filter((p) => p.protocol === "Analog" && p.direction === "out");
+  const auxIn = ports.filter((p) => p.protocol === "Aux" && p.direction === "in");
+  const auxOut = ports.filter((p) => p.protocol === "Aux" && p.direction === "out");
+  const midi = ports.filter((p) => p.protocol === "MIDI");
+  const other = ports.filter((p) => OTHER_GROUP_PROTOCOLS.has(p.protocol));
+
+  chunk(analogIn, CHUNK_SIZE).forEach((group, i) => {
+    groups.push({ id: `ain-${i + 1}`, label: rangeLabel("Ain", i, group.length), ports: group });
+  });
+  chunk(analogOut, CHUNK_SIZE).forEach((group, i) => {
+    groups.push({ id: `aout-${i + 1}`, label: rangeLabel("Aout", i, group.length), ports: group });
+  });
+  if (auxIn.length > 0) groups.push({ id: "axin", label: "AxIn", ports: auxIn });
+  if (auxOut.length > 0) groups.push({ id: "axout", label: "AxOut", ports: auxOut });
+  if (midi.length > 0) groups.push({ id: "m", label: "M", ports: midi });
+  if (other.length > 0) groups.push({ id: "o", label: "O", ports: other });
+
+  return groups;
+}
+
+export type HiddenGroups = Record<string, boolean>;
 
 // État par défaut à la pose d'un appareil : tous les groupes masqués,
 // pour partir d'une carte compacte et n'afficher que ce dont on a besoin.
-export function allGroupsHidden(): HiddenGroups {
-  return Object.fromEntries(PORT_GROUPS.map((group) => [group, true])) as HiddenGroups;
+export function allGroupsHidden(ports: Port[]): HiddenGroups {
+  return Object.fromEntries(computePortGroups(ports).map((group) => [group.id, true]));
 }

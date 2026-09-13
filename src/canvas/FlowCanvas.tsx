@@ -19,7 +19,7 @@ import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
 import { PatchCableEdge } from "./PatchCableEdge";
 import { protocolStrokeColors } from "./protocolColors";
-import { allGroupsHidden, type PortGroup } from "./portVisibility";
+import { allGroupsHidden } from "./portVisibility";
 import { computeRoutes, type HandleInfo, type RoutingNode } from "./routing";
 
 const nodeTypes = { device: DeviceNode };
@@ -90,7 +90,7 @@ function FlowCanvasInner() {
   // une seule fois (dépend seulement de setNodes, stable) ; chaque nœud
   // reçoit une fermeture qui lui est propre au moment de sa création.
   const onToggleGroup = useCallback(
-    (nodeId: string, group: PortGroup) => {
+    (nodeId: string, group: string) => {
       setNodes((current) =>
         current.map((node) =>
           node.id === nodeId
@@ -115,7 +115,7 @@ function FlowCanvasInner() {
         id,
         type: "device",
         position,
-        data: { model, hiddenGroups: allGroupsHidden(), onToggleGroup: (group) => onToggleGroup(id, group) },
+        data: { model, hiddenGroups: allGroupsHidden(model.ports), onToggleGroup: (group) => onToggleGroup(id, group) },
       };
       setNodes((current) => current.concat(newNode));
     },

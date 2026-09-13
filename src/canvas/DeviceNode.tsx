@@ -1,14 +1,14 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground } from "./protocolColors";
-import { PORT_GROUPS, PORT_GROUP_LABELS, portGroupFor, type HiddenGroups, type PortGroup } from "./portVisibility";
+import { computePortGroups, type HiddenGroups } from "./portVisibility";
 import "./DeviceNode.css";
 
 export type DeviceNodeType = Node<
   {
     model: DeviceModel;
     hiddenGroups: HiddenGroups;
-    onToggleGroup: (group: PortGroup) => void;
+    onToggleGroup: (group: string) => void;
   },
   "device"
 >;
@@ -60,34 +60,37 @@ function rightHandleStyle(port: Port) {
 export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
   const { model, hiddenGroups, onToggleGroup } = data;
 
-  // Un port toujours-visible (portGroupFor === null, ex. Dante/AES50/
-  // Snake/Ethernet/Speakon) reste affiché quoi qu'il arrive ; les autres
-  // ne s'affichent que si leur groupe n'est pas masqué.
+  // Les groupes (et les paquets de 8 pour Analog In/Out) sont recalculés
+  // depuis le catalogue ; seul l'état masqué/visible vient des données du
+  // nœud. Un port qui n'appartient à aucun groupe (Dante/AES50/Snake/
+  // Ethernet/Speakon) reste toujours affiché.
+  const groups = computePortGroups(model.ports);
+  const portIdToGroupId = new Map<string, string>();
+  for (const group of groups) {
+    for (const port of group.ports) portIdToGroupId.set(port.id, group.id);
+  }
+
   const visiblePorts = model.ports.filter((port) => {
-    const group = portGroupFor(port);
-    return group === null || !hiddenGroups[group];
+    const groupId = portIdToGroupId.get(port.id);
+    return groupId === undefined || !hiddenGroups[groupId];
   });
   const leftPorts = visiblePorts.filter((port) => positionFor(port) === Position.Left);
   const rightPorts = visiblePorts.filter((port) => positionFor(port) === Position.Right);
 
-  // On ne propose un bouton que si l'appareil a au moins un port de ce
-  // groupe — pas de bouton "M" mort sur une enceinte sans MIDI.
-  const availableGroups = PORT_GROUPS.filter((group) => model.ports.some((port) => portGroupFor(port) === group));
-
   return (
     <div className="device-node">
       <div className="device-node-title">{model.name}</div>
-      {availableGroups.length > 0 && (
+      {groups.length > 0 && (
         <div className="device-node-toggles">
-          {availableGroups.map((group) => (
+          {groups.map((group) => (
             <button
-              key={group}
+              key={group.id}
               type="button"
-              className={`device-node-toggle${hiddenGroups[group] ? "" : " device-node-toggle-active"}`}
-              onClick={() => onToggleGroup(group)}
-              title={`Afficher/masquer les ports ${PORT_GROUP_LABELS[group]}`}
+              className={`device-node-toggle${hiddenGroups[group.id] ? "" : " device-node-toggle-active"}`}
+              onClick={() => onToggleGroup(group.id)}
+              title={`Afficher/masquer les ports ${group.label}`}
             >
-              {PORT_GROUP_LABELS[group]}
+              {group.label}
             </button>
           ))}
         </div>
