@@ -50,12 +50,12 @@
   }
 }
 
+/* #root occupait au plus 1126px, centré (reliquat du template Vite par
+   défaut, pensé pour une page de doc, pas pour une appli plein écran) :
+   l'outil doit pouvoir utiliser toute la largeur de l'écran, les montages
+   techniques devenant complexes (beaucoup d'appareils, beaucoup de câbles). */
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
+  width: 100%;
   min-height: 100svh;
   display: flex;
   flex-direction: column;

@@ -60,6 +60,13 @@
      n'est pas "protocole Speakon", c'est "cette connexion est refusée". */
   --bp-invalid: oklch(62% 0.19 25);
 
+  /* dégradé de la palette latérale (déco pure, aucun sens de signal) —
+     tokens dédiés plutôt que de réutiliser --bp-signal-aes50/--bp-invalid :
+     un futur changement de couleur de protocole ne doit pas faire dériver
+     la palette, et inversement. */
+  --bp-palette-grad-start: oklch(70% 0.13 195); /* turquoise */
+  --bp-palette-grad-end:   oklch(55% 0.19 25);  /* rouge */
+
   --bp-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
   --bp-grid-size: 32px;
   --bp-radius: 0px;          /* esprit calque de plan, pas de coins arrondis */
@@ -114,6 +121,9 @@
   /* connexion refusée pendant qu'on tire un câble (protocole incompatible,
      port déjà utilisé...) */
   --invalid: var(--bp-invalid);
+
+  --palette-bg: linear-gradient(180deg, var(--bp-palette-grad-start), var(--bp-palette-grad-end));
+  --palette-width: 240px;
 }
 
 /* ---------- 3. PONT REACT FLOW ---------- */

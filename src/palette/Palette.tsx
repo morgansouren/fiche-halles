@@ -1,5 +1,6 @@
 import { catalog } from "../domain/catalog";
 import type { DeviceModel } from "../domain/equipment";
+import "./Palette.css";
 
 // Mime type custom pour identifier nos données de drag-and-drop
 // (évite de collisionner avec d'autres usages du dataTransfer).
