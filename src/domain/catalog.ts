@@ -16,18 +16,7 @@ export const catalog: DeviceModel[] = [
     name: "Midas HD96",
     category: "console",
     ports: [
-      // Inout
-      { id: "dante-primary", label: "Dante Primary", protocol: "Dante", direction: "inout" },
-      { id: "dante-secondary", label: "Dante Secondary", protocol: "Dante", direction: "inout" },
-      { id: "snake-1", label: "Snake 1", protocol: "Snake", direction: "inout", media: "optique ou cuivre" },
-      { id: "snake-2", label: "Snake 2", protocol: "Snake", direction: "inout", media: "optique ou cuivre" },
-      { id: "aes50-1", label: "AES50 1", protocol: "AES50", direction: "inout" },
-      { id: "aes50-2", label: "AES50 2", protocol: "AES50", direction: "inout" },
-      { id: "aes50-3", label: "AES50 3", protocol: "AES50", direction: "inout" },
-      { id: "aes50-4", label: "AES50 4", protocol: "AES50", direction: "inout" },
-      { id: "ultranet", label: "Ultranet", protocol: "Ultranet", direction: "inout" },
-      { id: "midi-thru", label: "MIDI Thru", protocol: "MIDI", direction: "inout" },
-      { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
+    
       // In
       { id: "analog-in-1", label: "Analog In 1", protocol: "Analog", direction: "in" },
       { id: "analog-in-2", label: "Analog In 2", protocol: "Analog", direction: "in" },
@@ -56,6 +45,19 @@ export const catalog: DeviceModel[] = [
       { id: "aes3-out-sync", label: "AES3 Out Sync", protocol: "AES3", direction: "out" },
       { id: "midi-out", label: "MIDI Out", protocol: "MIDI", direction: "out" },
       { id: "wordclock-out", label: "Word Clock Out", protocol: "WordClock", direction: "out" },
+
+      // Inout
+      { id: "dante-primary", label: "Dante Primary", protocol: "Dante", direction: "inout" },
+      { id: "dante-secondary", label: "Dante Secondary", protocol: "Dante", direction: "inout" },
+      { id: "snake-1", label: "Snake 1", protocol: "Snake", direction: "inout", media: "optique ou cuivre" },
+      { id: "snake-2", label: "Snake 2", protocol: "Snake", direction: "inout", media: "optique ou cuivre" },
+      { id: "aes50-1", label: "AES50 1", protocol: "AES50", direction: "inout" },
+      { id: "aes50-2", label: "AES50 2", protocol: "AES50", direction: "inout" },
+      { id: "aes50-3", label: "AES50 3", protocol: "AES50", direction: "inout" },
+      { id: "aes50-4", label: "AES50 4", protocol: "AES50", direction: "inout" },
+      { id: "ultranet", label: "Ultranet", protocol: "Ultranet", direction: "inout" },
+      { id: "midi-thru", label: "MIDI Thru", protocol: "MIDI", direction: "inout" },
+      { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
     ],
   },
   {
@@ -95,15 +97,7 @@ export const catalog: DeviceModel[] = [
       { id: "midi-in", label: "MIDI In", protocol: "MIDI", direction: "in" },
       { id: "wordclock-in", label: "Word Clock In", protocol: "WordClock", direction: "in" },
 
-      // Inout
-      { id: "aes50-1", label: "AES50 1", protocol: "AES50", direction: "inout" },
-      { id: "aes50-2", label: "AES50 2", protocol: "AES50", direction: "inout" },
-      { id: "aes50-3", label: "AES50 3", protocol: "AES50", direction: "inout" },
-      { id: "aes50-4", label: "AES50 4", protocol: "AES50", direction: "inout" },
-      { id: "aes50-5", label: "AES50 5", protocol: "AES50", direction: "inout" },
-      { id: "aes50-6", label: "AES50 6", protocol: "AES50", direction: "inout" },
-      { id: "midi-thru", label: "MIDI Thru", protocol: "MIDI", direction: "inout" },
-      { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
+      
       // Out
       { id: "analog-out-1", label: "Analog Out 1", protocol: "Analog", direction: "out" },
       { id: "analog-out-2", label: "Analog Out 2", protocol: "Analog", direction: "out" },
@@ -135,6 +129,16 @@ export const catalog: DeviceModel[] = [
       { id: "midi-out", label: "MIDI Out", protocol: "MIDI", direction: "out" },
       { id: "wordclock-out", label: "Word Clock Out", protocol: "WordClock", direction: "out" },
 
+      // Inout
+      { id: "aes50-1", label: "AES50 1", protocol: "AES50", direction: "inout" },
+      { id: "aes50-2", label: "AES50 2", protocol: "AES50", direction: "inout" },
+      { id: "aes50-3", label: "AES50 3", protocol: "AES50", direction: "inout" },
+      { id: "aes50-4", label: "AES50 4", protocol: "AES50", direction: "inout" },
+      { id: "aes50-5", label: "AES50 5", protocol: "AES50", direction: "inout" },
+      { id: "aes50-6", label: "AES50 6", protocol: "AES50", direction: "inout" },
+      { id: "midi-thru", label: "MIDI Thru", protocol: "MIDI", direction: "inout" },
+      { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
+
     ],
   },
   {
@@ -142,6 +146,7 @@ export const catalog: DeviceModel[] = [
     name: "Midas M32R",
     category: "console",
     ports: [
+
       // In
       { id: "analog-in-1", label: "Analog In 1", protocol: "Analog", direction: "in" },
       { id: "analog-in-2", label: "Analog In 2", protocol: "Analog", direction: "in" },
@@ -166,6 +171,8 @@ export const catalog: DeviceModel[] = [
       { id: "aux-in-5", label: "Aux In 5", protocol: "Aux", direction: "in" },
       { id: "aux-in-6", label: "Aux In 6", protocol: "Aux", direction: "in" },
       { id: "midi-in", label: "MIDI In", protocol: "MIDI", direction: "in" },
+      
+
       // Out
       { id: "analog-out-1", label: "Analog Out 1", protocol: "Analog", direction: "out" },
       { id: "analog-out-2", label: "Analog Out 2", protocol: "Analog", direction: "out" },
@@ -182,13 +189,15 @@ export const catalog: DeviceModel[] = [
       { id: "aux-out-5", label: "Aux Out 5", protocol: "Aux", direction: "out" },
       { id: "aux-out-6", label: "Aux Out 6", protocol: "Aux", direction: "out" },
       { id: "midi-out", label: "MIDI Out", protocol: "MIDI", direction: "out" },
+            
       // Inout
+      { id: "dante-primary", label: "Dante Primary", protocol: "Dante", direction: "inout" },
+      { id: "dante-secondary", label: "Dante Secondary", protocol: "Dante", direction: "inout" },
       { id: "aes50-a", label: "AES50 A", protocol: "AES50", direction: "inout" },
       { id: "aes50-b", label: "AES50 B", protocol: "AES50", direction: "inout" },
       { id: "ultranet", label: "Ultranet", protocol: "Ultranet", direction: "inout" },
       { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
-      { id: "dante-primary", label: "Dante Primary", protocol: "Dante", direction: "inout" },
-      { id: "dante-secondary", label: "Dante Secondary", protocol: "Dante", direction: "inout" },
+
     ],
   },
   {
@@ -393,6 +402,7 @@ export const catalog: DeviceModel[] = [
     category: "converter",
     ports: [
       // Inout
+      { id: "snake", label: "Snake", protocol: "Snake", direction: "inout", media: "optique ou cuivre" },
       { id: "aes50-1", label: "AES50 1", protocol: "AES50", direction: "inout" },
       { id: "aes50-2", label: "AES50 2", protocol: "AES50", direction: "inout" },
       { id: "aes50-3", label: "AES50 3", protocol: "AES50", direction: "inout" },
@@ -401,7 +411,6 @@ export const catalog: DeviceModel[] = [
       { id: "aes50-6", label: "AES50 6", protocol: "AES50", direction: "inout" },
       { id: "aes50-7", label: "AES50 7", protocol: "AES50", direction: "inout" },
       { id: "aes50-8", label: "AES50 8", protocol: "AES50", direction: "inout" },
-      { id: "snake", label: "Snake", protocol: "Snake", direction: "inout", media: "optique ou cuivre" },
       { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
     ],
   },
@@ -412,15 +421,16 @@ export const catalog: DeviceModel[] = [
     ports: [
       // In
       { id: "wordclock-in", label: "Word Clock In", protocol: "WordClock", direction: "in" },
-      // Out
-      { id: "wordclock-out", label: "Word Clock Out", protocol: "WordClock", direction: "out" },
+      
       // Inout
+      { id: "dante-primary", label: "Dante Primary", protocol: "Dante", direction: "inout" },
+      { id: "dante-secondary", label: "Dante Secondary", protocol: "Dante", direction: "inout" },
       { id: "aes50-1", label: "AES50 1", protocol: "AES50", direction: "inout" },
       { id: "aes50-2", label: "AES50 2", protocol: "AES50", direction: "inout" },
       { id: "aes50-3", label: "AES50 3", protocol: "AES50", direction: "inout" },
-      { id: "dante-primary", label: "Dante Primary", protocol: "Dante", direction: "inout" },
-      { id: "dante-secondary", label: "Dante Secondary", protocol: "Dante", direction: "inout" },
       { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
+      // Out
+      { id: "wordclock-out", label: "Word Clock Out", protocol: "WordClock", direction: "out" },
     ],
   },
   {
