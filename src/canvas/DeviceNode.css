@@ -92,9 +92,22 @@
    perturbe le calcul de centrage vertical de la ligne flex (le cercle se
    décale vers le bas), même sans aucun décalage top/left explicite. En le
    fixant une fois pour toutes, seul le z-index change au survol, jamais
-   le type de positionnement — le centre ne bouge plus. */
+   le type de positionnement — le centre ne bouge plus.
+
+   Effet de bord de ce passage en position:relative : les règles de la
+   librairie .react-flow__handle-left/-right (top:50%, left:0 ou right:0)
+   sont ignorées en position:static, mais s'appliquent bel et bien en
+   position:relative (un décalage relatif à sa propre position dans le
+   flux). Résultat : le cercle se décale hors de l'alignement avec le
+   texte du port. On neutralise donc top/left/right/bottom ici, pour que
+   seul le flux normal (et le centrage vertical de .device-node-port)
+   détermine sa position. */
 .device-node-handle {
   position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
   transform: none;
   width: 8px;
   height: 8px;
