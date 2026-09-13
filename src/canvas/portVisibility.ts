@@ -1,4 +1,4 @@
-import type { Port } from "../domain/equipment";
+import type { DeviceModel, Port } from "../domain/equipment";
 
 // Groupes de ports que l'on peut masquer/afficher depuis l'en-tête d'un
 // appareil, pour réduire la hauteur d'une carte quand on n'a pas besoin
@@ -66,8 +66,17 @@ export function computePortGroups(ports: Port[]): PortGroupDef[] {
 
 export type HiddenGroups = Record<string, boolean>;
 
-// État par défaut à la pose d'un appareil : tous les groupes masqués,
-// pour partir d'une carte compacte et n'afficher que ce dont on a besoin.
-export function allGroupsHidden(ports: Port[]): HiddenGroups {
-  return Object.fromEntries(computePortGroups(ports).map((group) => [group.id, true]));
+// État par défaut à la pose d'un appareil : tous les groupes masqués (pour
+// partir d'une carte compacte), sauf les Analog In d'un amplificateur — un
+// Nxamp n'a que 4 entrées, les montrer d'emblée n'encombre pas la carte
+// comme le ferait un canal 1-24/48 de console, et c'est justement ce
+// qu'on veut voir en premier sur un ampli. Les boutons restent cliquables
+// pour les masquer si besoin, ce n'est qu'un état de départ différent.
+export function defaultHiddenGroups(model: DeviceModel): HiddenGroups {
+  return Object.fromEntries(
+    computePortGroups(model.ports).map((group) => {
+      const visibleByDefault = model.category === "amplifier" && group.id.startsWith("ain");
+      return [group.id, !visibleByDefault];
+    }),
+  );
 }

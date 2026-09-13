@@ -19,7 +19,7 @@ import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
 import { PatchCableEdge } from "./PatchCableEdge";
 import { protocolStrokeColors } from "./protocolColors";
-import { allGroupsHidden } from "./portVisibility";
+import { defaultHiddenGroups } from "./portVisibility";
 import { computeRoutes, type HandleInfo, type RoutingNode } from "./routing";
 
 const nodeTypes = { device: DeviceNode };
@@ -115,7 +115,7 @@ function FlowCanvasInner() {
         id,
         type: "device",
         position,
-        data: { model, hiddenGroups: allGroupsHidden(model.ports), onToggleGroup: (group) => onToggleGroup(id, group) },
+        data: { model, hiddenGroups: defaultHiddenGroups(model), onToggleGroup: (group) => onToggleGroup(id, group) },
       };
       setNodes((current) => current.concat(newNode));
     },
