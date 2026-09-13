@@ -50,6 +50,11 @@
   --bp-signal-snake-a:    oklch(80% 0.17 145); /* vert */
   --bp-signal-snake-b:    oklch(88% 0.17 95);  /* jaune */
 
+  /* couleur d'interaction (sélection) — volontairement hors de la palette
+     de protocole, pour ne jamais se confondre avec un signal (ex. AES50
+     est déjà turquoise) */
+  --bp-accent: oklch(92% 0.19 100); /* jaune fluo */
+
   --bp-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
   --bp-grid-size: 32px;
   --bp-radius: 0px;          /* esprit calque de plan, pas de coins arrondis */
@@ -96,8 +101,10 @@
   --edge-width-hover: 8px;
   --port-marker-size: 8px; /* carré de couleur devant le nom du port */
 
-  /* accent générique (liens, focus, sélection...) */
-  --accent: var(--bp-signal-aes50);
+  /* accent générique (liens, focus, sélection...) — jamais une couleur de
+     protocole, pour rester lisible même sur un câble/port AES50
+     (turquoise) ou tout autre signal */
+  --accent: var(--bp-accent);
 }
 
 /* ---------- 3. PONT REACT FLOW ---------- */
@@ -146,13 +153,25 @@
    (un nœud sélectionné reçoit aussi le focus du navigateur) — sans ce
    troisième sélecteur, leur règle plus spécifique annule silencieusement
    la nôtre. */
+/* Halo lumineux : box-shadow (pas outline) parce que c'est la seule des
+   deux à accepter un flou — un anneau net + une lueur plus large qui se
+   dissipe, comme si le contour brillait. */
 .react-flow__node.selectable.selected {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--accent),
+    0 0 12px 3px var(--accent);
 }
 
 .react-flow__edge:hover .react-flow__edge-path {
   stroke-width: var(--edge-width-hover);
+}
+
+/* Même halo sur un câble sélectionné : filter/drop-shadow est l'équivalent
+   du box-shadow pour un tracé SVG (un box-shadow classique se contenterait
+   de la boîte englobante rectangulaire du chemin, pas de sa vraie forme). */
+.react-flow__edge.selected .react-flow__edge-path {
+  filter: drop-shadow(0 0 2px var(--accent)) drop-shadow(0 0 8px var(--accent));
 }
 
 /*
