@@ -140,7 +140,10 @@
   --palette-bg: linear-gradient(180deg, var(--bp-palette-grad-start), var(--bp-palette-grad-end));
   --palette-width: 240px;
 
-  --device-console-bg: linear-gradient(180deg, var(--bp-device-console-a), var(--bp-device-console-b));
+  /* Le jaune pastel n'apparaît que dans le dernier tiers (au lieu d'un
+     dégradé linéaire 50/50) : le gris-bleuté domine la carte, le jaune
+     reste un accent bas de carte plutôt qu'une moitié franche. */
+  --device-console-bg: linear-gradient(180deg, var(--bp-device-console-a) 0%, var(--bp-device-console-a) 65%, var(--bp-device-console-b) 100%);
   --device-dl-bg:    var(--bp-device-dl);
   --device-dn-bg:    linear-gradient(160deg, var(--bp-device-dn-a), var(--bp-device-dn-b));
   --device-nxamp-bg: var(--bp-device-nxamp);
