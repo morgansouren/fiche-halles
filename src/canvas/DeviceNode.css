@@ -1,18 +1,24 @@
 /* Mise en forme purement fonctionnelle (lisibilité minimale) — le design
    visuel définitif revient à l'utilisateur, à remplacer librement. */
 
+/* background/color sont posés en style inline par DeviceNode.tsx (couleur
+   de famille d'appareil, voir deviceColors.ts) — tout le reste du texte de
+   la carte (titre, ports, boutons) s'appuie sur `currentColor`/`inherit`
+   pour rester lisible quelle que soit la famille, y compris Nxamp dont le
+   fond violet foncé est la seule variante à texte clair. */
 .device-node {
-  background: #fff;
-  border: 1px solid #999;
+  border: 1px solid currentColor;
   border-radius: 4px;
   font-size: 12px;
   min-width: 140px;
 }
 
 .device-node-title {
-  padding: 4px 8px;
-  font-weight: 600;
-  border-bottom: 1px solid #ccc;
+  padding: 6px 8px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent);
   white-space: nowrap;
 }
 
@@ -22,7 +28,7 @@
   flex-wrap: wrap;
   gap: 4px;
   padding: 3px 6px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent);
 }
 
 /* Les paquets d'une même famille (Ain 1-8 / Ain 9-16 / ...) s'empilent
@@ -38,17 +44,20 @@
   font-size: 10px;
   line-height: 1.4;
   padding: 0 5px;
-  border: 1px solid #999;
+  border: 1px solid currentColor;
   border-radius: 3px;
   background: transparent;
-  color: #666;
+  color: inherit;
   cursor: pointer;
 }
 
+/* --accent (jaune, la même couleur "engagé" que la sélection ailleurs
+   dans l'appli) plutôt qu'un gris fixe : reste lisible sur les 5 familles
+   de carte, y compris Nxamp (fond violet foncé). */
 .device-node-toggle-active {
-  background: #333;
-  color: #fff;
-  border-color: #333;
+  background: var(--accent);
+  color: var(--bp-navy-950);
+  border-color: var(--accent);
 }
 
 .device-node-body {
@@ -111,7 +120,9 @@
   transform: none;
   width: 8px;
   height: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  /* currentColor plutôt qu'un noir fixe : reste visible sur les cartes à
+     fond foncé (Nxamp) comme sur les cartes claires. */
+  border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
 }
 
 .device-node-handle-left {

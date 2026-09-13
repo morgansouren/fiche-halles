@@ -67,6 +67,21 @@
   --bp-palette-grad-start: oklch(70% 0.13 195); /* turquoise */
   --bp-palette-grad-end:   oklch(55% 0.19 25);  /* rouge */
 
+  /* couleur de carte par famille d'appareil (repère visuel au premier
+     coup d'œil sur un montage chargé) — indépendante des couleurs de
+     protocole et de la palette, pour les mêmes raisons. Luminosités (L)
+     choisies pour rester lisibles avec un texte sombre unique sur toute
+     la famille "console" (gris/bleuté -> jaune pastel restent tous les
+     deux clairs) ; Nxamp est la seule famille foncée, donc la seule à
+     recevoir le texte clair --device-text-light. */
+  --bp-device-console-a: oklch(70% 0.02 250); /* gris bleuté */
+  --bp-device-console-b: oklch(92% 0.07 95);  /* jaune pastel */
+  --bp-device-dl:         oklch(82% 0.09 300); /* violet clair */
+  --bp-device-dn-a:       oklch(90% 0.01 240); /* argenté clair */
+  --bp-device-dn-b:       oklch(74% 0.015 240); /* argenté ombré */
+  --bp-device-nxamp:      oklch(34% 0.15 300); /* violet foncé */
+  --bp-device-other:      oklch(88% 0.01 250); /* neutre, appareils hors des 4 familles */
+
   --bp-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
   --bp-grid-size: 32px;
   --bp-radius: 0px;          /* esprit calque de plan, pas de coins arrondis */
@@ -124,6 +139,14 @@
 
   --palette-bg: linear-gradient(180deg, var(--bp-palette-grad-start), var(--bp-palette-grad-end));
   --palette-width: 240px;
+
+  --device-console-bg: linear-gradient(180deg, var(--bp-device-console-a), var(--bp-device-console-b));
+  --device-dl-bg:    var(--bp-device-dl);
+  --device-dn-bg:    linear-gradient(160deg, var(--bp-device-dn-a), var(--bp-device-dn-b));
+  --device-nxamp-bg: var(--bp-device-nxamp);
+  --device-other-bg: var(--bp-device-other);
+  --device-text-dark:  var(--bp-navy-950);
+  --device-text-light: var(--bp-text-100);
 }
 
 /* ---------- 3. PONT REACT FLOW ---------- */
