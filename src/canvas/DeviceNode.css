@@ -85,9 +85,16 @@
    la bordure — cf. handleStyle() dans DeviceNode.tsx). Rien de tout ça
    n'est en style inline, exprès : ça laisse la règle :hover ci-dessous
    agrandir le cercle et lui ajouter un halo sans qu'un style inline ne
-   l'en empêche. */
+   l'en empêche.
+
+   position:relative est posé ici, en permanence (pas seulement au survol) :
+   un changement de `position` de static à relative au moment du survol
+   perturbe le calcul de centrage vertical de la ligne flex (le cercle se
+   décale vers le bas), même sans aucun décalage top/left explicite. En le
+   fixant une fois pour toutes, seul le z-index change au survol, jamais
+   le type de positionnement — le centre ne bouge plus. */
 .device-node-handle {
-  position: static;
+  position: relative;
   transform: none;
   width: 8px;
   height: 8px;
@@ -107,7 +114,6 @@
    tout en devenant plus facile à viser. --port-color vient du style
    inline posé par port (voir handleStyle() dans DeviceNode.tsx). */
 .device-node-handle:hover {
-  position: relative;
   z-index: 5;
   transform: scale(1.8);
   filter: drop-shadow(0 0 3px var(--port-color, var(--accent))) drop-shadow(0 0 7px var(--port-color, var(--accent)));
