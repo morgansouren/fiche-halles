@@ -18,10 +18,20 @@
 
 .device-node-toggles {
   display: flex;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px;
   padding: 3px 6px;
   border-bottom: 1px solid #ccc;
+}
+
+/* Les paquets d'une même famille (Ain 1-8 / Ain 9-16 / ...) s'empilent
+   verticalement au lieu de s'aligner en ligne, pour que la largeur de la
+   carte ne dépende pas du nombre de paquets. */
+.device-node-toggle-family {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .device-node-toggle {

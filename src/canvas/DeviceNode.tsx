@@ -1,7 +1,7 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground } from "./protocolColors";
-import { computePortGroups, type HiddenGroups } from "./portVisibility";
+import { computePortGroups, type HiddenGroups, type PortGroupDef } from "./portVisibility";
 import "./DeviceNode.css";
 
 export type DeviceNodeType = Node<
@@ -57,6 +57,21 @@ function rightHandleStyle(port: Port) {
   };
 }
 
+// Empile les boutons d'une même famille (les paquets "Ain 1-8"/"Ain 9-16"/...
+// les uns au-dessus des autres) plutôt que de les laisser s'aligner en
+// ligne — ça évite qu'un appareil avec beaucoup de paquets s'élargisse
+// inutilement (la largeur de la carte ne grandit pas avec le nombre de
+// paquets, seule sa hauteur d'en-tête augmente d'une ligne).
+function groupTogglesByFamily(groups: PortGroupDef[]): PortGroupDef[][] {
+  const families = new Map<string, PortGroupDef[]>();
+  for (const group of groups) {
+    const family = group.id.includes("-") ? group.id.slice(0, group.id.indexOf("-")) : group.id;
+    if (!families.has(family)) families.set(family, []);
+    families.get(family)!.push(group);
+  }
+  return Array.from(families.values());
+}
+
 export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
   const { model, hiddenGroups, onToggleGroup } = data;
 
@@ -76,22 +91,27 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
   });
   const leftPorts = visiblePorts.filter((port) => positionFor(port) === Position.Left);
   const rightPorts = visiblePorts.filter((port) => positionFor(port) === Position.Right);
+  const toggleFamilies = groupTogglesByFamily(groups);
 
   return (
     <div className="device-node">
       <div className="device-node-title">{model.name}</div>
       {groups.length > 0 && (
         <div className="device-node-toggles">
-          {groups.map((group) => (
-            <button
-              key={group.id}
-              type="button"
-              className={`device-node-toggle${hiddenGroups[group.id] ? "" : " device-node-toggle-active"}`}
-              onClick={() => onToggleGroup(group.id)}
-              title={`Afficher/masquer les ports ${group.label}`}
-            >
-              {group.label}
-            </button>
+          {toggleFamilies.map((family) => (
+            <div className="device-node-toggle-family" key={family[0].id}>
+              {family.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  className={`device-node-toggle${hiddenGroups[group.id] ? "" : " device-node-toggle-active"}`}
+                  onClick={() => onToggleGroup(group.id)}
+                  title={`Afficher/masquer les ports ${group.label}`}
+                >
+                  {group.label}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
       )}
