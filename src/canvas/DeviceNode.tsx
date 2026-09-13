@@ -1,9 +1,17 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground } from "./protocolColors";
+import { PORT_GROUPS, PORT_GROUP_LABELS, portGroupFor, type HiddenGroups, type PortGroup } from "./portVisibility";
 import "./DeviceNode.css";
 
-export type DeviceNodeType = Node<{ model: DeviceModel }, "device">;
+export type DeviceNodeType = Node<
+  {
+    model: DeviceModel;
+    hiddenGroups: HiddenGroups;
+    onToggleGroup: (group: PortGroup) => void;
+  },
+  "device"
+>;
 
 // Les ports "in" apparaissent à gauche, les ports "out" et "inout" à droite.
 function positionFor(port: Port): Position {
@@ -50,13 +58,40 @@ function rightHandleStyle(port: Port) {
 }
 
 export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
-  const { model } = data;
-  const leftPorts = model.ports.filter((port) => positionFor(port) === Position.Left);
-  const rightPorts = model.ports.filter((port) => positionFor(port) === Position.Right);
+  const { model, hiddenGroups, onToggleGroup } = data;
+
+  // Un port toujours-visible (portGroupFor === null, ex. Dante/AES50/
+  // Snake/Ethernet/Speakon) reste affiché quoi qu'il arrive ; les autres
+  // ne s'affichent que si leur groupe n'est pas masqué.
+  const visiblePorts = model.ports.filter((port) => {
+    const group = portGroupFor(port);
+    return group === null || !hiddenGroups[group];
+  });
+  const leftPorts = visiblePorts.filter((port) => positionFor(port) === Position.Left);
+  const rightPorts = visiblePorts.filter((port) => positionFor(port) === Position.Right);
+
+  // On ne propose un bouton que si l'appareil a au moins un port de ce
+  // groupe — pas de bouton "M" mort sur une enceinte sans MIDI.
+  const availableGroups = PORT_GROUPS.filter((group) => model.ports.some((port) => portGroupFor(port) === group));
 
   return (
     <div className="device-node">
       <div className="device-node-title">{model.name}</div>
+      {availableGroups.length > 0 && (
+        <div className="device-node-toggles">
+          {availableGroups.map((group) => (
+            <button
+              key={group}
+              type="button"
+              className={`device-node-toggle${hiddenGroups[group] ? "" : " device-node-toggle-active"}`}
+              onClick={() => onToggleGroup(group)}
+              title={`Afficher/masquer les ports ${PORT_GROUP_LABELS[group]}`}
+            >
+              {PORT_GROUP_LABELS[group]}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="device-node-body">
         <div className="device-node-column">
           {leftPorts.map((port) => (

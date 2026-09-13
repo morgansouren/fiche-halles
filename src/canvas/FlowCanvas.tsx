@@ -19,6 +19,7 @@ import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
 import { PatchCableEdge } from "./PatchCableEdge";
 import { protocolStrokeColors } from "./protocolColors";
+import { allGroupsHidden, type PortGroup } from "./portVisibility";
 import { computeRoutes, type HandleInfo, type RoutingNode } from "./routing";
 
 const nodeTypes = { device: DeviceNode };
@@ -85,6 +86,22 @@ function FlowCanvasInner() {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
+  // Bascule un groupe de ports masqué/visible pour un nœud donné. Défini
+  // une seule fois (dépend seulement de setNodes, stable) ; chaque nœud
+  // reçoit une fermeture qui lui est propre au moment de sa création.
+  const onToggleGroup = useCallback(
+    (nodeId: string, group: PortGroup) => {
+      setNodes((current) =>
+        current.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, hiddenGroups: { ...node.data.hiddenGroups, [group]: !node.data.hiddenGroups[group] } } }
+            : node,
+        ),
+      );
+    },
+    [setNodes],
+  );
+
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
@@ -93,15 +110,16 @@ function FlowCanvasInner() {
       if (!model) return;
 
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      const id = nextNodeId();
       const newNode: DeviceNodeType = {
-        id: nextNodeId(),
+        id,
         type: "device",
         position,
-        data: { model },
+        data: { model, hiddenGroups: allGroupsHidden(), onToggleGroup: (group) => onToggleGroup(id, group) },
       };
       setNodes((current) => current.concat(newNode));
     },
-    [screenToFlowPosition, setNodes],
+    [screenToFlowPosition, setNodes, onToggleGroup],
   );
 
   const onConnect = useCallback(

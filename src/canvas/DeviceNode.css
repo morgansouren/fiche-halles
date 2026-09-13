@@ -16,6 +16,31 @@
   white-space: nowrap;
 }
 
+.device-node-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 3px 6px;
+  border-bottom: 1px solid #ccc;
+}
+
+.device-node-toggle {
+  font-size: 10px;
+  line-height: 1.4;
+  padding: 0 5px;
+  border: 1px solid #999;
+  border-radius: 3px;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+}
+
+.device-node-toggle-active {
+  background: #333;
+  color: #fff;
+  border-color: #333;
+}
+
 .device-node-body {
   display: flex;
   justify-content: space-between;
