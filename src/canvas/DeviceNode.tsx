@@ -118,7 +118,13 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
                 <button
                   key={group.id}
                   type="button"
-                  className={`device-node-toggle${hiddenGroups[group.id] ? "" : " device-node-toggle-active"}`}
+                  className={[
+                    "device-node-toggle",
+                    group.id.includes("out") && "device-node-toggle-out",
+                    !hiddenGroups[group.id] && "device-node-toggle-active",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   onClick={() => onToggleGroup(group.id)}
                   title={`Afficher/masquer les ports ${group.label}`}
                 >

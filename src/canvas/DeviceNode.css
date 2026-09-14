@@ -60,6 +60,16 @@
   border-color: var(--accent);
 }
 
+/* Même logique que .device-node-column:last-child .device-node-port-label :
+   un bouton qui masque/affiche un groupe de SORTIES suit la couleur de la
+   colonne de droite (--device-right-text, posée uniquement pour DL) —
+   inerte ailleurs, où la variable est absente. Seul l'état inactif est
+   concerné : l'état actif garde son jaune/navy, déjà lisible partout. */
+.device-node-toggle-out:not(.device-node-toggle-active) {
+  color: var(--device-right-text, inherit);
+  border-color: var(--device-right-text, currentColor);
+}
+
 .device-node-body {
   display: flex;
   justify-content: space-between;
