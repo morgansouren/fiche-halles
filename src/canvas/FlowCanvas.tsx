@@ -16,7 +16,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { catalog } from "../domain/catalog";
 import { DeviceNode, type DeviceNodeType } from "./DeviceNode";
-import { TextNode, type TextNodeType } from "./TextNode";
+import { TextNode, TEXT_NODE_BASE_WIDTH, TEXT_NODE_BASE_HEIGHT, type TextNodeType } from "./TextNode";
 import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
 import { PatchCableEdge } from "./PatchCableEdge";
@@ -166,8 +166,8 @@ function FlowCanvasInner() {
         id,
         type: "text",
         position,
-        width: 160,
-        height: 32,
+        width: TEXT_NODE_BASE_WIDTH,
+        height: TEXT_NODE_BASE_HEIGHT,
         selected: true,
         data: { text: "", onChangeText: (text) => onChangeText(id, text) },
       };

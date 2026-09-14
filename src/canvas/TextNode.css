@@ -2,11 +2,30 @@
    nom...) : volontairement minimale — du texte blanc flottant, sans boîte
    ni fond, pour ne jamais se confondre avec une carte d'appareil. Le
    contour + les poignées de redimensionnement (NodeResizer) suffisent à
-   indiquer sa zone quand elle est sélectionnée. */
+   indiquer sa zone quand elle est sélectionnée.
+
+   Pas de overflow:hidden ici : les poignées de NodeResizer (des enfants de
+   .text-node, positionnées à cheval sur la bordure comme n'importe quelle
+   poignée React Flow) seraient alors coupées pile sur leur moitié externe
+   — invisibles au clic (elementFromPoint tombe sur le canevas en-dessous).
+   Le scaler ci-dessous n'en a de toute façon pas besoin : sa taille mise à
+   l'échelle correspond toujours exactement à celle du nœud, jamais plus. */
 .text-node {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  position: relative;
+}
+
+/* Rendu à sa taille "normale" (TEXT_NODE_BASE_WIDTH/HEIGHT, posée en style
+   inline par TextNode.tsx) puis étiré par transform: scale() jusqu'à la
+   taille réelle du nœud — voir le commentaire dans TextNode.tsx. Origine
+   en haut-gauche : la boîte grandit depuis le même coin que celui que
+   NodeResizer utilise comme ancre par défaut, pas de recentrage à gérer. */
+.text-node-scaler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
 }
 
 .text-node-display,
