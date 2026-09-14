@@ -121,6 +121,7 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
                   className={[
                     "device-node-toggle",
                     group.id.includes("out") && "device-node-toggle-out",
+                    group.id.includes("in") && "device-node-toggle-in",
                     !hiddenGroups[group.id] && "device-node-toggle-active",
                   ]
                     .filter(Boolean)

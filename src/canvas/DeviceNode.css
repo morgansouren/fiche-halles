@@ -70,6 +70,12 @@
   border-color: var(--device-right-text, currentColor);
 }
 
+/* Même logique que les libellés d'entrée : les boutons qui masquent/
+   affichent un groupe d'ENTRÉES ressortent en gras, actif ou non. */
+.device-node-toggle-in {
+  font-weight: 700;
+}
+
 .device-node-body {
   display: flex;
   justify-content: space-between;
@@ -87,6 +93,13 @@
   gap: 4px;
   padding-block: 2px;
   white-space: nowrap;
+}
+
+/* Les entrées (colonne de gauche, toujours "in" — voir positionFor() dans
+   DeviceNode.tsx) ressortent en gras, pour les distinguer d'un coup d'œil
+   des sorties/inout à droite. */
+.device-node-column:first-child .device-node-port-label {
+  font-weight: 700;
 }
 
 /* Pas de rembourrage du côté qui touche la bordure du nœud : c'est ce
