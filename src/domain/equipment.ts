@@ -27,9 +27,13 @@ export interface Port {
   // Précision physique optionnelle (ex. "optique ou cuivre"), purement
   // informative : n'intervient pas dans la validation des connexions.
   media?: string;
+  // Sous-groupe optionnel (ex. VLAN d'un switch réseau) : regroupe des
+  // ports sous un même intitulé/couleur sur la carte. Purement descriptif
+  // — n'intervient dans aucune règle de connexion.
+  group?: string;
 }
 
-export type DeviceCategory = "console" | "converter" | "speaker" | "amplifier";
+export type DeviceCategory = "console" | "converter" | "speaker" | "amplifier" | "switch";
 
 export interface DeviceModel {
   id: string;

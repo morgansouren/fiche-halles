@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground, protocolStrokeColors } from "./protocolColors";
 import { deviceCardStyle } from "./deviceColors";
+import { portGroupColor } from "./portGroupColors";
 import { computePortGroups, type HiddenGroups, type PortGroupDef } from "./portVisibility";
 import "./DeviceNode.css";
 
@@ -48,6 +49,27 @@ function handleStyle(port: Port): HandleStyle {
   };
 }
 
+// Pour un switch réseau, le protocole (toujours Ethernet) ne distingue pas
+// les ports entre eux : c'est leur groupe (VLAN) qui prend le rôle de
+// --port-color/background que joue le protocole ailleurs.
+function switchHandleStyle(port: Port): HandleStyle {
+  const color = portGroupColor(port.group);
+  return { background: color, "--port-color": color };
+}
+
+// Rassemble les ports consécutifs d'un même groupe (VLAN), dans l'ordre du
+// catalogue — un switch affiche tous ses ports d'un coup, groupés par
+// intitulé, jamais par colonne gauche/droite comme les autres appareils.
+function groupPortsByVlan(ports: Port[]): { label: string; ports: Port[] }[] {
+  const groups = new Map<string, Port[]>();
+  for (const port of ports) {
+    const label = port.group ?? "";
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label)!.push(port);
+  }
+  return Array.from(groups.entries()).map(([label, groupPorts]) => ({ label, ports: groupPorts }));
+}
+
 // Empile les boutons d'une même famille (les paquets "Ain 1-8"/"Ain 9-16"/...
 // les uns au-dessus des autres) plutôt que de les laisser s'aligner en
 // ligne — ça évite qu'un appareil avec beaucoup de paquets s'élargisse
@@ -65,6 +87,7 @@ function groupTogglesByFamily(groups: PortGroupDef[]): PortGroupDef[][] {
 
 export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
   const { model, hiddenGroups, onToggleGroup } = data;
+  const isSwitch = model.category === "switch";
 
   // Les groupes (et les paquets de 8 pour Analog In/Out) sont recalculés
   // depuis le catalogue ; seul l'état masqué/visible vient des données du
@@ -106,36 +129,62 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
           ))}
         </div>
       )}
-      <div className="device-node-body">
-        <div className="device-node-column">
-          {leftPorts.map((port) => (
-            <div className="device-node-port" key={port.id}>
-              <Handle
-                id={port.id}
-                type={handleTypeFor(port)}
-                position={Position.Left}
-                className="device-node-handle device-node-handle-left"
-                style={handleStyle(port)}
-              />
-              <span className="device-node-port-label">{port.label}</span>
+      {isSwitch ? (
+        <div className="device-node-switch-body">
+          {groupPortsByVlan(model.ports).map((vlan) => (
+            <div className="device-node-switch-group" key={vlan.label}>
+              <div className="device-node-switch-group-label">
+                <span className="device-node-switch-group-swatch" style={{ background: portGroupColor(vlan.label) }} />
+                {vlan.label}
+              </div>
+              <div className="device-node-switch-group-ports">
+                {vlan.ports.map((port) => (
+                  <div className="device-node-switch-port" key={port.id} title={port.label}>
+                    <Handle
+                      id={port.id}
+                      type={handleTypeFor(port)}
+                      position={Position.Bottom}
+                      className="device-node-handle device-node-handle-bottom"
+                      style={switchHandleStyle(port)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
-        <div className="device-node-column">
-          {rightPorts.map((port) => (
-            <div className="device-node-port" key={port.id}>
-              <span className="device-node-port-label">{port.label}</span>
-              <Handle
-                id={port.id}
-                type={handleTypeFor(port)}
-                position={Position.Right}
-                className="device-node-handle device-node-handle-right"
-                style={handleStyle(port)}
-              />
-            </div>
-          ))}
+      ) : (
+        <div className="device-node-body">
+          <div className="device-node-column">
+            {leftPorts.map((port) => (
+              <div className="device-node-port" key={port.id}>
+                <Handle
+                  id={port.id}
+                  type={handleTypeFor(port)}
+                  position={Position.Left}
+                  className="device-node-handle device-node-handle-left"
+                  style={handleStyle(port)}
+                />
+                <span className="device-node-port-label">{port.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="device-node-column">
+            {rightPorts.map((port) => (
+              <div className="device-node-port" key={port.id}>
+                <span className="device-node-port-label">{port.label}</span>
+                <Handle
+                  id={port.id}
+                  type={handleTypeFor(port)}
+                  position={Position.Right}
+                  className="device-node-handle device-node-handle-right"
+                  style={handleStyle(port)}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

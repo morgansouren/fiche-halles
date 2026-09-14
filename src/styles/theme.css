@@ -82,6 +82,15 @@
   --bp-device-nxamp:      oklch(34% 0.15 300); /* violet foncé */
   --bp-device-other:      oklch(88% 0.01 250); /* neutre, appareils hors des 4 familles */
 
+  /* couleur des ports par groupe (VLAN) sur un switch réseau — tous les
+     ports d'un switch partagent le même protocole (Ethernet), c'est donc
+     la seule couleur qui les distingue visuellement les uns des autres. */
+  --bp-switch-group-light: oklch(85% 0.15 95);  /* jaune, VLAN lumière */
+  --bp-switch-group-sound: oklch(72% 0.15 55);  /* orange, VLAN son */
+  --bp-switch-group-video: oklch(65% 0.15 300); /* violet, VLAN vidéo */
+  --bp-switch-group-mgmt:  oklch(65% 0.01 250); /* gris, VLAN management */
+  --bp-switch-group-link:  oklch(20% 0 0);      /* noir, liaisons inter-switch */
+
   --bp-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
   --bp-grid-size: 32px;
   --bp-radius: 0px;          /* esprit calque de plan, pas de coins arrondis */
@@ -150,6 +159,12 @@
   --device-other-bg: var(--bp-device-other);
   --device-text-dark:  var(--bp-navy-950);
   --device-text-light: var(--bp-text-100);
+
+  --switch-group-light: var(--bp-switch-group-light);
+  --switch-group-sound: var(--bp-switch-group-sound);
+  --switch-group-video: var(--bp-switch-group-video);
+  --switch-group-mgmt:  var(--bp-switch-group-mgmt);
+  --switch-group-link:  var(--bp-switch-group-link);
 }
 
 /* ---------- 3. PONT REACT FLOW ---------- */

@@ -521,4 +521,28 @@ export const catalog: DeviceModel[] = [
       { id: "speakon-4", label: "Speakon 4", protocol: "Speakon", direction: "out" },
     ],
   },
+  {
+    id: "gigacore-luminex",
+    name: "Gigacore Luminex",
+    category: "switch",
+    ports: [
+      // Lumière
+      { id: "port-1", label: "Port 1", protocol: "Ethernet", direction: "inout", group: "Lumière" },
+      { id: "port-2", label: "Port 2", protocol: "Ethernet", direction: "inout", group: "Lumière" },
+      { id: "port-3", label: "Port 3", protocol: "Ethernet", direction: "inout", group: "Lumière" },
+      // Son
+      { id: "port-4", label: "Port 4", protocol: "Ethernet", direction: "inout", group: "Son" },
+      { id: "port-5", label: "Port 5", protocol: "Ethernet", direction: "inout", group: "Son" },
+      { id: "port-6", label: "Port 6", protocol: "Ethernet", direction: "inout", group: "Son" },
+      { id: "port-7", label: "Port 7", protocol: "Ethernet", direction: "inout", group: "Son" },
+      // Vidéo
+      { id: "port-8", label: "Port 8", protocol: "Ethernet", direction: "inout", group: "Vidéo" },
+      { id: "port-9", label: "Port 9", protocol: "Ethernet", direction: "inout", group: "Vidéo" },
+      // Mgmt
+      { id: "port-10", label: "Port 10", protocol: "Ethernet", direction: "inout", group: "Mgmt" },
+      // Link
+      { id: "port-11", label: "Port 11", protocol: "Ethernet", direction: "inout", group: "Link" },
+      { id: "port-12", label: "Port 12", protocol: "Ethernet", direction: "inout", group: "Link" },
+    ],
+  },
 ];
