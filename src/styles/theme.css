@@ -155,11 +155,14 @@
      dégradé linéaire 50/50) : le gris-bleuté domine la carte, le jaune
      reste un accent bas de carte plutôt qu'une moitié franche. */
   --device-console-bg: linear-gradient(180deg, var(--bp-device-console-a) 0%, var(--bp-device-console-a) 65%, var(--bp-device-console-b) 100%);
-  /* de ce violet vers un bleu foncé (90deg = gauche -> droite) : le texte
-     sombre de cette famille reste très lisible côté violet, mais pas côté
-     bleu foncé sur la seule base du contraste plat — voir --legibility-
-     halo et son usage dans deviceColors.ts. */
-  --device-dl-bg:    linear-gradient(90deg, var(--bp-device-dl), var(--bp-device-dl-b));
+  /* de ce violet vers un bleu foncé (90deg = gauche -> droite). Le bleu
+     atteint sa teinte finale dès 45% (pas à 100%) et reste plein jusqu'au
+     bord droit : le dégradé est décalé vers la gauche exprès, pour que le
+     halo clair du texte (voir --legibility-halo, deviceColors.ts) ait un
+     fond nettement foncé sur la majorité de la largeur, plutôt qu'une
+     zone intermédiaire floue où ni le texte sombre ni le halo ne
+     ressortent bien. */
+  --device-dl-bg:    linear-gradient(90deg, var(--bp-device-dl) 0%, var(--bp-device-dl-b) 45%, var(--bp-device-dl-b) 100%);
   --legibility-halo: var(--bp-halo-light);
   --device-dn-bg:    linear-gradient(160deg, var(--bp-device-dn-a), var(--bp-device-dn-b));
   --device-nxamp-bg: var(--bp-device-nxamp);
