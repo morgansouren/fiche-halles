@@ -89,6 +89,14 @@
   padding-left: 6px;
 }
 
+/* --device-right-text n'est posé (en style inline sur .device-node) que
+   par les familles dont le fond de la colonne de droite est nettement
+   plus foncé que celui de la gauche (voir deviceColors.ts) ; ailleurs la
+   variable est absente et le texte garde la couleur héritée normale. */
+.device-node-column:last-child .device-node-port-label {
+  color: var(--device-right-text, inherit);
+}
+
 /* Un handle React Flow par défaut se positionne en pourcentage avec un
    transform de centrage ; on l'annule ici (en flux normal, à cheval sur
    la bordure — cf. handleStyle() dans DeviceNode.tsx). Rien de tout ça
