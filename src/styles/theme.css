@@ -77,6 +77,8 @@
   --bp-device-console-a: oklch(70% 0.02 250); /* gris bleuté */
   --bp-device-console-b: oklch(92% 0.07 95);  /* jaune pastel */
   --bp-device-dl:         oklch(82% 0.09 300); /* violet clair */
+  --bp-device-dl-b:       oklch(28% 0.12 260); /* bleu foncé, extrémité du dégradé DL */
+  --bp-halo-light:        oklch(97% 0 0); /* halo clair autour du texte sombre, portion foncée d'un dégradé */
   --bp-device-dn-a:       oklch(90% 0.01 240); /* argenté clair */
   --bp-device-dn-b:       oklch(74% 0.015 240); /* argenté ombré */
   --bp-device-nxamp:      oklch(34% 0.15 300); /* violet foncé */
@@ -153,7 +155,12 @@
      dégradé linéaire 50/50) : le gris-bleuté domine la carte, le jaune
      reste un accent bas de carte plutôt qu'une moitié franche. */
   --device-console-bg: linear-gradient(180deg, var(--bp-device-console-a) 0%, var(--bp-device-console-a) 65%, var(--bp-device-console-b) 100%);
-  --device-dl-bg:    var(--bp-device-dl);
+  /* de ce violet vers un bleu foncé (90deg = gauche -> droite) : le texte
+     sombre de cette famille reste très lisible côté violet, mais pas côté
+     bleu foncé sur la seule base du contraste plat — voir --legibility-
+     halo et son usage dans deviceColors.ts. */
+  --device-dl-bg:    linear-gradient(90deg, var(--bp-device-dl), var(--bp-device-dl-b));
+  --legibility-halo: var(--bp-halo-light);
   --device-dn-bg:    linear-gradient(160deg, var(--bp-device-dn-a), var(--bp-device-dn-b));
   --device-nxamp-bg: var(--bp-device-nxamp);
   --device-other-bg: var(--bp-device-other);
