@@ -1,0 +1,41 @@
+/* Note libre posée sur le canevas (adresse IP, fréquence d'échantillonnage,
+   nom...) : volontairement minimale — du texte blanc flottant, sans boîte
+   ni fond, pour ne jamais se confondre avec une carte d'appareil. Le
+   contour + les poignées de redimensionnement (NodeResizer) suffisent à
+   indiquer sa zone quand elle est sélectionnée. */
+.text-node {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.text-node-display,
+.text-node-textarea {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 2px 4px;
+  font-family: var(--font-technical);
+  font-size: 14px;
+  line-height: 1.3;
+  color: #fff;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.text-node-display {
+  cursor: grab;
+}
+
+.text-node-textarea {
+  display: block;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  caret-color: #fff;
+}
+
+.text-node-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
