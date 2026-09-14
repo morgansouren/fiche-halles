@@ -201,6 +201,24 @@ export const catalog: DeviceModel[] = [
     ],
   },
   {
+    id: "midas-m32c",
+    name: "Midas M32C",
+    category: "console",
+    ports: [
+      // In
+      { id: "midi-in", label: "MIDI In", protocol: "MIDI", direction: "in" },
+      // Out
+      { id: "midi-out", label: "MIDI Out", protocol: "MIDI", direction: "out" },
+      // Inout
+      { id: "dante-primary", label: "Dante Primary", protocol: "Dante", direction: "inout" },
+      { id: "dante-secondary", label: "Dante Secondary", protocol: "Dante", direction: "inout" },
+      { id: "aes50-a", label: "AES50 A", protocol: "AES50", direction: "inout" },
+      { id: "aes50-b", label: "AES50 B", protocol: "AES50", direction: "inout" },
+      { id: "ultranet", label: "Ultranet", protocol: "Ultranet", direction: "inout" },
+      { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
+    ],
+  },
+  {
     id: "dl151",
     name: "DL151",
     category: "converter",
