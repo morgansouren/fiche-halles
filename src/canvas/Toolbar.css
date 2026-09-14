@@ -1,0 +1,43 @@
+/* Barre d'outils flottante, posée en haut au centre du canevas (voir
+   <Panel position="top-center"> dans FlowCanvas.tsx). Conteneur neutre
+   volontairement discret : ce sont les boutons qu'on doit remarquer. */
+.canvas-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-panel-bg);
+  border: 1px solid var(--surface-panel-border);
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+
+.canvas-toolbar-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-technical);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.canvas-toolbar-button:hover {
+  color: var(--text-primary);
+  border-color: var(--surface-panel-border);
+}
+
+/* Même code couleur que le reste de l'appli pour "cet outil est engagé"
+   (sélection d'un câble/nœud, bouton de groupe actif...). */
+.canvas-toolbar-button-active {
+  background: var(--accent);
+  color: var(--bp-navy-950);
+}
+
+.canvas-toolbar-button-active:hover {
+  color: var(--bp-navy-950);
+  border-color: var(--accent);
+}

@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
   Background,
   ConnectionMode,
+  Panel,
   addEdge,
   useNodesState,
   useEdgesState,
@@ -21,6 +22,7 @@ import { PatchCableEdge } from "./PatchCableEdge";
 import { protocolStrokeColors } from "./protocolColors";
 import { defaultHiddenGroups } from "./portVisibility";
 import { computeRoutes, type HandleInfo, type RoutingNode } from "./routing";
+import { Toolbar } from "./Toolbar";
 
 const nodeTypes = { device: DeviceNode };
 const edgeTypes = { patchCable: PatchCableEdge };
@@ -37,6 +39,12 @@ function FlowCanvasInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition } = useReactFlow();
   const storeApi = useStoreApi();
+  // Par défaut, glisser sur le canevas déplace la vue (comportement React
+  // Flow standard). En mode sélection, un glisser-clic-gauche trace une
+  // boîte de sélection à la place ; le déplacement reste possible au
+  // clic-droit/molette (voir panOnDrag ci-dessous) — convention reprise
+  // des outils de dessin (Figma...), pas propre à React Flow.
+  const [selectionMode, setSelectionMode] = useState(false);
 
   // Le routage (évitement des boîtes, anti-chevauchement) est recalculé
   // pour tous les câbles dès qu'un nœud bouge ou qu'un câble change ;
@@ -143,8 +151,13 @@ function FlowCanvasInner() {
         edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={defaultEdgeOptions}
+        selectionOnDrag={selectionMode}
+        panOnDrag={selectionMode ? [1, 2] : true}
       >
         <Background />
+        <Panel position="top-center">
+          <Toolbar selectionMode={selectionMode} onToggleSelectionMode={() => setSelectionMode((v) => !v)} />
+        </Panel>
       </ReactFlow>
     </div>
   );
