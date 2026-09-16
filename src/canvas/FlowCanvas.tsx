@@ -156,18 +156,30 @@ function FlowCanvasInner() {
     [setNodes],
   );
 
-  // Appelé par TextNode à chaque mesure du texte pendant l'édition : pose
-  // à la fois la taille réelle du nœud (width/height, ce qui fait
-  // visuellement coller la boîte au texte tapé) et la nouvelle référence
-  // d'échelle (baseWidth/baseHeight) pour un étirement ultérieur.
+  // Appelé par TextNode à chaque mesure du texte pendant l'édition, avec
+  // la taille naturelle (non étirée) du texte tapé. On y applique le
+  // ratio d'étirement déjà en place (largeur/hauteur actuelles du nœud
+  // divisées par l'ancienne référence) plutôt que de l'écraser : rouvrir
+  // une note déjà agrandie pour la corriger continue à l'écrire à la
+  // même taille visuelle, elle ne retombe jamais à sa taille naturelle
+  // toute seule — seul un redimensionnement manuel (NodeResizer) change
+  // ce ratio.
   const onAutoFitText = useCallback(
-    (nodeId: string, width: number, height: number) => {
+    (nodeId: string, fitWidth: number, fitHeight: number) => {
       setNodes((current) =>
-        current.map((node) =>
-          node.id === nodeId && node.type === "text"
-            ? { ...node, width, height, data: { ...node.data, baseWidth: width, baseHeight: height } }
-            : node,
-        ),
+        current.map((node) => {
+          if (node.id !== nodeId || node.type !== "text") return node;
+          const prevBaseWidth = node.data.baseWidth ?? fitWidth;
+          const prevBaseHeight = node.data.baseHeight ?? fitHeight;
+          const scaleX = (node.width ?? prevBaseWidth) / prevBaseWidth;
+          const scaleY = (node.height ?? prevBaseHeight) / prevBaseHeight;
+          return {
+            ...node,
+            width: fitWidth * scaleX,
+            height: fitHeight * scaleY,
+            data: { ...node.data, baseWidth: fitWidth, baseHeight: fitHeight },
+          };
+        }),
       );
     },
     [setNodes],

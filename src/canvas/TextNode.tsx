@@ -40,19 +40,28 @@ export const TEXT_NODE_MIN_HEIGHT = 24;
 // keepAspectRatio=false donc scaleX/scaleY indépendants — un étirement,
 // pas un simple agrandissement uniforme).
 //
-// Tant qu'on édite, la boîte colle exactement au texte tapé (mesuré via
-// un clone invisible du même style, ci-dessous) : le texte reste à sa
-// taille "vraie" pendant la saisie, jamais déformé, et la boîte grandit
-// ET rétrécit avec lui — c'est cette taille, à chaque mesure, qui devient
-// la nouvelle référence d'échelle pour un étirement ultérieur (une fois
-// sorti d'édition, via les poignées de NodeResizer).
+// Tant qu'on édite, la taille naturelle du texte tapé est mesurée en
+// continu (clone invisible du même style, ci-dessous) et transmise à
+// FlowCanvas.tsx (onAutoFit), qui l'applique en conservant le ratio
+// d'étirement déjà en place — une note jamais redimensionnée grandit/
+// rétrécit avec son texte (scale=1), une note déjà agrandie continue de
+// s'écrire à la même taille visuelle plutôt que de retomber à sa taille
+// naturelle. Double-clic pour rééditer : le curseur se place à la fin du
+// texte existant, pas question de le retaper.
 export function TextNode({ data, selected, width, height }: NodeProps<TextNodeType>) {
   const [isEditing, setIsEditing] = useState(data.text === "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (isEditing) textareaRef.current?.focus();
+    if (!isEditing || !textareaRef.current) return;
+    const el = textareaRef.current;
+    el.focus();
+    // Curseur à la fin du texte existant plutôt qu'au début (comportement
+    // par défaut du navigateur au focus d'un <textarea> déjà rempli) :
+    // rouvrir une note pour la corriger doit reprendre là où elle
+    // s'arrête, pas devant le premier caractère.
+    el.setSelectionRange(el.value.length, el.value.length);
   }, [isEditing]);
 
   useLayoutEffect(() => {
