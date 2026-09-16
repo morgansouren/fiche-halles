@@ -42,6 +42,7 @@
 
 .device-node-toggle {
   font-size: 10px;
+  font-weight: 700;
   line-height: 1.4;
   padding: 0 5px;
   border: 1px solid currentColor;
@@ -70,12 +71,6 @@
   border-color: var(--device-right-text, currentColor);
 }
 
-/* Même logique que les libellés d'entrée : les boutons qui masquent/
-   affichent un groupe d'ENTRÉES ressortent en gras, actif ou non. */
-.device-node-toggle-in {
-  font-weight: 700;
-}
-
 .device-node-body {
   display: flex;
   justify-content: space-between;
@@ -95,10 +90,10 @@
   white-space: nowrap;
 }
 
-/* Les entrées (colonne de gauche, toujours "in" — voir positionFor() dans
-   DeviceNode.tsx) ressortent en gras, pour les distinguer d'un coup d'œil
-   des sorties/inout à droite. */
-.device-node-column:first-child .device-node-port-label {
+/* En gras partout (entrées comme sorties/inout) : plus lisible, essayé
+   d'abord seulement à gauche puis étendu aux deux côtés par préférence
+   explicite. */
+.device-node-port-label {
   font-weight: 700;
 }
 
