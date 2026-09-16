@@ -78,7 +78,6 @@
   --bp-device-console-b: oklch(92% 0.07 95);  /* jaune pastel */
   --bp-device-dl:         oklch(82% 0.09 300); /* violet clair */
   --bp-device-dl-b:       oklch(28% 0.12 260); /* bleu foncé, extrémité du dégradé DL */
-  --bp-halo-light:        oklch(97% 0 0); /* halo clair autour du texte sombre, portion foncée d'un dégradé */
   --bp-device-dn-a:       oklch(90% 0.01 240); /* argenté clair */
   --bp-device-dn-b:       oklch(74% 0.015 240); /* argenté ombré */
   --bp-device-nxamp:      oklch(34% 0.15 300); /* violet foncé */
@@ -161,10 +160,10 @@
      fond soit nettement foncé sur la majorité de la largeur (colonne de
      droite comprise) plutôt qu'une zone intermédiaire floue. Le texte de
      la colonne de droite passe d'ailleurs en clair pour cette raison
-     (--device-right-text, deviceColors.ts) — seul le titre garde le texte
-     sombre + halo. */
+     (--device-right-text, deviceColors.ts) — le titre, lui, traverse les
+     deux zones et reçoit à la place un badge blanc opaque derrière lui
+     (voir deviceTitleHasBadge()/.device-node-title-badge). */
   --device-dl-bg:    linear-gradient(90deg, var(--bp-device-dl) 0%, var(--bp-device-dl-b) 60%, var(--bp-device-dl-b) 100%);
-  --legibility-halo: var(--bp-halo-light);
   --device-dn-bg:    linear-gradient(160deg, var(--bp-device-dn-a), var(--bp-device-dn-b));
   --device-nxamp-bg: var(--bp-device-nxamp);
   --device-other-bg: var(--bp-device-other);

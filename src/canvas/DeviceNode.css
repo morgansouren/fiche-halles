@@ -22,6 +22,22 @@
   white-space: nowrap;
 }
 
+/* DL uniquement (voir deviceTitleHasBadge() dans deviceColors.ts) : le
+   titre traverse les deux teintes du dégradé (violet clair -> bleu
+   foncé), donc aucune couleur de texte unique ne resterait lisible
+   partout. Un fond blanc opaque derrière le nom règle ça sans condition :
+   le texte sombre s'y lit aussi bien qu'ailleurs sur la carte, quel que
+   soit l'endroit du dégradé où il tombe. Couleur fixe (#fff), pas
+   currentColor/var(--device-*) : le badge doit rester blanc même si la
+   couleur de texte de la carte change par ailleurs. */
+.device-node-title-badge {
+  display: inline-block;
+  background: #fff;
+  color: var(--bp-navy-950);
+  padding: 1px 8px;
+  border-radius: 6px;
+}
+
 .device-node-toggles {
   display: flex;
   align-items: flex-start;

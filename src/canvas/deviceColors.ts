@@ -28,29 +28,38 @@ function familyOf(model: DeviceModel): DeviceFamily {
 // texte sombre.
 //
 // DL est un cas à part : son dégradé va du violet clair jusqu'à un bleu
-// foncé (--bp-device-dl-b). Le titre (centré, traverse les deux zones)
-// garde le texte sombre avec un halo clair (text-shadow) qui le fait
-// ressortir même côté bleu. Les ports, eux, n'ont pas ce problème de
-// zone traversée : chaque colonne reste entièrement d'un côté du
-// dégradé, donc chacune peut prendre la couleur qui lui va le mieux —
-// texte sombre à gauche (in, toujours côté violet), texte clair à droite
-// (out/inout, toujours côté bleu, via --device-right-text lu par
-// DeviceNode.css). Plus fiable qu'un halo seul sur un fond aussi foncé.
-const DL_TEXT_SHADOW = "0 0 4px color-mix(in srgb, var(--legibility-halo) 70%, transparent), 0 0 1px var(--legibility-halo)";
+// foncé (--bp-device-dl-b). Les ports n'ont pas de souci de lisibilité
+// (chaque colonne reste entièrement d'un côté du dégradé, donc chacune
+// prend la couleur qui lui va le mieux — texte sombre à gauche/in, clair
+// à droite/out via --device-right-text). Le titre, lui, est centré et
+// traverse les deux zones : plutôt qu'un halo (essayé, jamais pleinement
+// convaincant sur un fond aussi foncé), on lui donne un petit badge blanc
+// opaque — le texte sombre s'y lit alors aussi bien qu'ailleurs sur la
+// carte, quel que soit l'endroit du dégradé où le titre tombe.
+interface FamilyConfig {
+  style: DeviceCardStyle;
+  titleBadge?: boolean;
+}
 
-const FAMILY_STYLE: Record<DeviceFamily, DeviceCardStyle> = {
-  console: { background: "var(--device-console-bg)", color: "var(--device-text-dark)" },
+const FAMILY_CONFIG: Record<DeviceFamily, FamilyConfig> = {
+  console: { style: { background: "var(--device-console-bg)", color: "var(--device-text-dark)" } },
   dl: {
-    background: "var(--device-dl-bg)",
-    color: "var(--device-text-dark)",
-    textShadow: DL_TEXT_SHADOW,
-    "--device-right-text": "var(--device-text-light)",
+    style: {
+      background: "var(--device-dl-bg)",
+      color: "var(--device-text-dark)",
+      "--device-right-text": "var(--device-text-light)",
+    },
+    titleBadge: true,
   },
-  dn:      { background: "var(--device-dn-bg)", color: "var(--device-text-dark)" },
-  nxamp:   { background: "var(--device-nxamp-bg)", color: "var(--device-text-light)" },
-  other:   { background: "var(--device-other-bg)", color: "var(--device-text-dark)" },
+  dn:      { style: { background: "var(--device-dn-bg)", color: "var(--device-text-dark)" } },
+  nxamp:   { style: { background: "var(--device-nxamp-bg)", color: "var(--device-text-light)" } },
+  other:   { style: { background: "var(--device-other-bg)", color: "var(--device-text-dark)" } },
 };
 
 export function deviceCardStyle(model: DeviceModel): DeviceCardStyle {
-  return FAMILY_STYLE[familyOf(model)];
+  return FAMILY_CONFIG[familyOf(model)].style;
+}
+
+export function deviceTitleHasBadge(model: DeviceModel): boolean {
+  return FAMILY_CONFIG[familyOf(model)].titleBadge ?? false;
 }

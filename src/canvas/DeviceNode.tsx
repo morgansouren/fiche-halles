@@ -2,7 +2,7 @@ import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import type { CSSProperties } from "react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground, protocolStrokeColors } from "./protocolColors";
-import { deviceCardStyle } from "./deviceColors";
+import { deviceCardStyle, deviceTitleHasBadge } from "./deviceColors";
 import { portGroupColor } from "./portGroupColors";
 import { computePortGroups, type HiddenGroups, type PortGroupDef } from "./portVisibility";
 import "./DeviceNode.css";
@@ -109,7 +109,9 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
 
   return (
     <div className="device-node" style={deviceCardStyle(model)}>
-      <div className="device-node-title">{model.name}</div>
+      <div className="device-node-title">
+        {deviceTitleHasBadge(model) ? <span className="device-node-title-badge">{model.name}</span> : model.name}
+      </div>
       {groups.length > 0 && (
         <div className="device-node-toggles">
           {toggleFamilies.map((family) => (
