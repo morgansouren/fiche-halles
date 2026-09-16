@@ -5,12 +5,19 @@ export type Tool = "pan" | "select" | "text";
 export interface ToolbarProps {
   activeTool: Tool;
   onSelectTool: (tool: Tool) => void;
+  // "Masquer les ports inutilisés" est un simple bouton bascule (l'état
+  // reste actif tant qu'on ne reclique pas dessus), pas un outil de
+  // glisser sur le canevas comme les deux autres — d'où une paire
+  // props/état séparée plutôt qu'une troisième valeur de Tool.
+  hideUnusedPorts: boolean;
+  onToggleHideUnusedPorts: () => void;
 }
 
-// Barre d'outils de mise en page du canevas. Deux outils pour l'instant
-// (sélection multiple par boîte, note de texte libre) ; les futurs outils
-// de dessin (rectangle...) viendront s'ajouter ici, dans le même panneau.
-export function Toolbar({ activeTool, onSelectTool }: ToolbarProps) {
+// Barre d'outils de mise en page du canevas. Deux outils de glisser
+// (sélection multiple par boîte, note de texte libre) et un bouton
+// bascule de vue (masquer les ports inutilisés) ; les futurs outils de
+// dessin (rectangle...) viendront s'ajouter ici, dans le même panneau.
+export function Toolbar({ activeTool, onSelectTool, hideUnusedPorts, onToggleHideUnusedPorts }: ToolbarProps) {
   return (
     <div className="canvas-toolbar">
       <button
@@ -28,6 +35,14 @@ export function Toolbar({ activeTool, onSelectTool }: ToolbarProps) {
         title="Cliquer sur le canevas pour poser une note de texte libre"
       >
         Texte
+      </button>
+      <button
+        type="button"
+        className={`canvas-toolbar-button${hideUnusedPorts ? " canvas-toolbar-button-active" : ""}`}
+        onClick={onToggleHideUnusedPorts}
+        title="Masquer les ports sans câble (et leurs boutons de groupe) pour une vue épurée"
+      >
+        Masquer ports inutilisés
       </button>
     </div>
   );

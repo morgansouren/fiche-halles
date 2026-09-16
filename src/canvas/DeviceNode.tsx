@@ -18,6 +18,12 @@ export type DeviceNodeType = Node<
     model: DeviceModel;
     hiddenGroups: HiddenGroups;
     onToggleGroup: (group: string) => void;
+    // Calculés par FlowCanvas.tsx à partir de `edges` à chaque rendu (pas
+    // stockés dans l'état persistant du nœud) — voir l'outil "Masquer les
+    // ports inutilisés" de la barre d'outils. Absents (undefined) tant que
+    // ce mode n'a jamais été activé pour ce nœud.
+    hideUnusedPorts?: boolean;
+    usedPortIds?: Set<string>;
   },
   "device"
 >;
@@ -86,8 +92,15 @@ function groupTogglesByFamily(groups: PortGroupDef[]): PortGroupDef[][] {
 }
 
 export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
-  const { model, hiddenGroups, onToggleGroup } = data;
+  const { model, hiddenGroups, onToggleGroup, hideUnusedPorts, usedPortIds } = data;
   const isSwitch = model.category === "switch";
+
+  // "Masquer les ports inutilisés" est un filtre en plus de celui des
+  // groupes, pas un remplacement : un port peut très bien appartenir à un
+  // groupe visible ET être inutilisé. Ne dépend pas du protocole/de la
+  // catégorie — s'applique pareil aux deux mises en page (colonnes ou
+  // switch horizontal).
+  const isUsed = (port: Port) => !hideUnusedPorts || (usedPortIds?.has(port.id) ?? false);
 
   // Les groupes (et les paquets de 8 pour Analog In/Out) sont recalculés
   // depuis le catalogue ; seul l'état masqué/visible vient des données du
@@ -101,7 +114,8 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
 
   const visiblePorts = model.ports.filter((port) => {
     const groupId = portIdToGroupId.get(port.id);
-    return groupId === undefined || !hiddenGroups[groupId];
+    const groupVisible = groupId === undefined || !hiddenGroups[groupId];
+    return groupVisible && isUsed(port);
   });
   const leftPorts = visiblePorts.filter((port) => positionFor(port) === Position.Left);
   const rightPorts = visiblePorts.filter((port) => positionFor(port) === Position.Right);
@@ -112,7 +126,7 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
       <div className="device-node-title">
         {deviceTitleHasBadge(model) ? <span className="device-node-title-badge">{model.name}</span> : model.name}
       </div>
-      {groups.length > 0 && (
+      {!hideUnusedPorts && groups.length > 0 && (
         <div className="device-node-toggles">
           {toggleFamilies.map((family) => (
             <div className="device-node-toggle-family" key={family[0].id}>
@@ -140,7 +154,10 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
       )}
       {isSwitch ? (
         <div className="device-node-switch-body">
-          {groupPortsByVlan(model.ports).map((vlan) => (
+          {groupPortsByVlan(model.ports)
+            .map((vlan) => ({ ...vlan, ports: vlan.ports.filter(isUsed) }))
+            .filter((vlan) => vlan.ports.length > 0)
+            .map((vlan) => (
             <div className="device-node-switch-group" key={vlan.label}>
               <div className="device-node-switch-group-label">
                 <span className="device-node-switch-group-swatch" style={{ background: portGroupColor(vlan.label) }} />

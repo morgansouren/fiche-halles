@@ -50,6 +50,12 @@ function FlowCanvasInner() {
   // texte, cliquer sur le canevas pose une note (onPaneClick ci-dessous) ;
   // le drag garde son comportement de déplacement normal de la vue.
   const [activeTool, setActiveTool] = useState<Tool>("pan");
+  // Vue "épurée" indépendante des outils ci-dessus (pas un mode de
+  // glisser sur le canevas) : masque les ports sans câble et, avec eux,
+  // les boutons de groupe qui n'auraient alors plus lieu d'être. Ne
+  // modifie jamais `hiddenGroups` — juste un filtre d'affichage en plus,
+  // réversible sans perdre les choix de groupes de chacun.
+  const [hideUnusedPorts, setHideUnusedPorts] = useState(false);
 
   // Le routage (évitement des boîtes, anti-chevauchement) est recalculé
   // pour tous les câbles dès qu'un nœud bouge ou qu'un câble change ;
@@ -99,6 +105,24 @@ function FlowCanvasInner() {
       return { ...edge, data: { ...edge.data, path: routes.get(edge.id), strokeColors } };
     });
   }, [nodes, edges, storeApi]);
+
+  // Injecte hideUnusedPorts + l'ensemble des ports connectés dans les
+  // données de chaque appareil, juste pour l'affichage — jamais stocké
+  // dans `nodes` (même logique que routedEdges ci-dessus) : ça reste à
+  // jour tout seul à chaque changement de câblage, sans avoir à
+  // réécrire `nodes` à chaque fois qu'un câble apparaît ou disparaît.
+  const displayNodes = useMemo(() => {
+    if (!hideUnusedPorts) return nodes;
+    return nodes.map((node): CanvasNode => {
+      if (node.type !== "device") return node;
+      const usedPortIds = new Set<string>();
+      for (const edge of edges) {
+        if (edge.source === node.id && edge.sourceHandle) usedPortIds.add(edge.sourceHandle);
+        if (edge.target === node.id && edge.targetHandle) usedPortIds.add(edge.targetHandle);
+      }
+      return { ...node, data: { ...node.data, hideUnusedPorts, usedPortIds } };
+    });
+  }, [nodes, edges, hideUnusedPorts]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -188,7 +212,7 @@ function FlowCanvasInner() {
   return (
     <div style={{ width: "100%", height: "100%" }} onDragOver={onDragOver} onDrop={onDrop}>
       <ReactFlow
-        nodes={nodes}
+        nodes={displayNodes}
         edges={routedEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -204,7 +228,12 @@ function FlowCanvasInner() {
       >
         <Background />
         <Panel position="top-center">
-          <Toolbar activeTool={activeTool} onSelectTool={(tool) => setActiveTool((current) => (current === tool ? "pan" : tool))} />
+          <Toolbar
+            activeTool={activeTool}
+            onSelectTool={(tool) => setActiveTool((current) => (current === tool ? "pan" : tool))}
+            hideUnusedPorts={hideUnusedPorts}
+            onToggleHideUnusedPorts={() => setHideUnusedPorts((v) => !v)}
+          />
         </Panel>
       </ReactFlow>
     </div>
