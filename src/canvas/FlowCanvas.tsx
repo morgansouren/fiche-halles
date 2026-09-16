@@ -260,6 +260,11 @@ function FlowCanvasInner() {
         selectionOnDrag={activeTool === "select"}
         panOnDrag={activeTool === "select" ? [1, 2] : true}
         onPaneClick={onPaneClick}
+        // Ctrl (Windows/Linux) fonctionne déjà par défaut (Meta sur Mac) ;
+        // Shift s'ajoute explicitement comme second déclencheur équivalent
+        // pour le clic-ajout à la sélection — un tableau accepte plusieurs
+        // touches indifféremment, pas seulement une combinaison unique.
+        multiSelectionKeyCode={["Control", "Meta", "Shift"]}
       >
         <Background />
         <Panel position="top-center">
