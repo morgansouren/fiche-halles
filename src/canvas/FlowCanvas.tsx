@@ -16,7 +16,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { catalog } from "../domain/catalog";
 import { DeviceNode, type DeviceNodeType } from "./DeviceNode";
-import { TextNode, TEXT_NODE_BASE_WIDTH, TEXT_NODE_BASE_HEIGHT, type TextNodeType } from "./TextNode";
+import { TextNode, TEXT_NODE_MIN_WIDTH, TEXT_NODE_MIN_HEIGHT, type TextNodeType } from "./TextNode";
 import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
 import { PatchCableEdge } from "./PatchCableEdge";
@@ -156,6 +156,23 @@ function FlowCanvasInner() {
     [setNodes],
   );
 
+  // Appelé par TextNode à chaque mesure du texte pendant l'édition : pose
+  // à la fois la taille réelle du nœud (width/height, ce qui fait
+  // visuellement coller la boîte au texte tapé) et la nouvelle référence
+  // d'échelle (baseWidth/baseHeight) pour un étirement ultérieur.
+  const onAutoFitText = useCallback(
+    (nodeId: string, width: number, height: number) => {
+      setNodes((current) =>
+        current.map((node) =>
+          node.id === nodeId && node.type === "text"
+            ? { ...node, width, height, data: { ...node.data, baseWidth: width, baseHeight: height } }
+            : node,
+        ),
+      );
+    },
+    [setNodes],
+  );
+
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
@@ -190,15 +207,21 @@ function FlowCanvasInner() {
         id,
         type: "text",
         position,
-        width: TEXT_NODE_BASE_WIDTH,
-        height: TEXT_NODE_BASE_HEIGHT,
+        width: TEXT_NODE_MIN_WIDTH,
+        height: TEXT_NODE_MIN_HEIGHT,
         selected: true,
-        data: { text: "", onChangeText: (text) => onChangeText(id, text) },
+        data: {
+          text: "",
+          onChangeText: (text) => onChangeText(id, text),
+          onAutoFit: (w, h) => onAutoFitText(id, w, h),
+          baseWidth: TEXT_NODE_MIN_WIDTH,
+          baseHeight: TEXT_NODE_MIN_HEIGHT,
+        },
       };
       setNodes((current) => current.map((node): CanvasNode => ({ ...node, selected: false })).concat(newNode));
       setActiveTool("pan");
     },
-    [activeTool, screenToFlowPosition, setNodes, onChangeText],
+    [activeTool, screenToFlowPosition, setNodes, onChangeText, onAutoFitText],
   );
 
   const onConnect = useCallback(

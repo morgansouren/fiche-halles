@@ -16,11 +16,12 @@
   position: relative;
 }
 
-/* Rendu à sa taille "normale" (TEXT_NODE_BASE_WIDTH/HEIGHT, posée en style
-   inline par TextNode.tsx) puis étiré par transform: scale() jusqu'à la
-   taille réelle du nœud — voir le commentaire dans TextNode.tsx. Origine
-   en haut-gauche : la boîte grandit depuis le même coin que celui que
-   NodeResizer utilise comme ancre par défaut, pas de recentrage à gérer. */
+/* Rendu à sa taille "normale" (baseWidth/baseHeight, posée en style inline
+   par TextNode.tsx d'après la dernière mesure en édition) puis étiré par
+   transform: scale() jusqu'à la taille réelle du nœud — voir le
+   commentaire dans TextNode.tsx. Origine en haut-gauche : la boîte
+   grandit depuis le même coin que celui que NodeResizer utilise comme
+   ancre par défaut, pas de recentrage à gérer. */
 .text-node-scaler {
   position: absolute;
   top: 0;
@@ -28,6 +29,11 @@
   transform-origin: top left;
 }
 
+/* white-space: pre (pas pre-wrap) : le texte ne retourne jamais à la
+   ligne tout seul, seulement aux retours à la ligne tapés. C'est ce qui
+   rend l'ajustement automatique de la largeur possible (voir
+   .text-node-measure) — un texte qui pourrait se re-wrapper n'aurait pas
+   de largeur "naturelle" stable à mesurer. */
 .text-node-display,
 .text-node-textarea {
   width: 100%;
@@ -38,12 +44,26 @@
   font-size: 14px;
   line-height: 1.3;
   color: #fff;
-  white-space: pre-wrap;
-  word-break: break-word;
+  white-space: pre;
 }
 
 .text-node-display {
   cursor: grab;
+}
+
+/* Clone invisible utilisé uniquement pour mesurer la taille naturelle du
+   texte (voir TextNode.tsx) : mêmes police/padding que .text-node-display
+   (classe partagée), mais extrait du flux et libre de se dimensionner à
+   son contenu — c'est tout l'inverse de width/height:100% ci-dessus. */
+.text-node-measure {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  width: auto;
+  height: auto;
+  display: inline-block;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .text-node-textarea {
