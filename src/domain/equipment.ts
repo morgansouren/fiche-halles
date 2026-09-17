@@ -33,7 +33,20 @@ export interface Port {
   group?: string;
 }
 
-export type DeviceCategory = "console" | "converter" | "speaker" | "amplifier" | "switch" | "rf";
+// Catégories connues (autocomplétion) + n'importe quelle chaîne — un
+// utilisateur peut créer un appareil dans une nouvelle catégorie de son
+// choix (voir l'outil de création d'appareil, palette/CreateDeviceForm.tsx).
+// Le `string & {}` est une astuce TypeScript : ça garde l'autocomplétion
+// des littéraux ci-dessous tout en acceptant n'importe quelle autre chaîne
+// (un simple `string` ferait perdre l'autocomplétion).
+export type DeviceCategory =
+  | "console"
+  | "converter"
+  | "speaker"
+  | "amplifier"
+  | "switch"
+  | "rf"
+  | (string & {});
 
 export interface DeviceModel {
   id: string;

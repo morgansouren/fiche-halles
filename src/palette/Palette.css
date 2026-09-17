@@ -54,3 +54,24 @@
 .palette-item:active {
   cursor: grabbing;
 }
+
+/* Bouton d'ouverture du formulaire de création — pointillés plutôt qu'une
+   boîte pleine comme .palette-item : il ne se glisse pas sur le canevas,
+   il ne doit pas se confondre visuellement avec un appareil du catalogue. */
+.palette-create-button {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  font-family: var(--font-technical);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.palette-create-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}

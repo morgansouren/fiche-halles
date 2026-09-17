@@ -14,7 +14,7 @@ import {
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { catalog } from "../domain/catalog";
+import { useCatalog } from "../domain/CatalogContext";
 import { DeviceNode, type DeviceNodeType } from "./DeviceNode";
 import { TextNode, TEXT_NODE_MIN_WIDTH, TEXT_NODE_MIN_HEIGHT, type TextNodeType } from "./TextNode";
 import { RectNode, RECT_MIN_SIZE, type RectNodeType } from "./RectNode";
@@ -43,6 +43,7 @@ function FlowCanvasInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition } = useReactFlow();
   const storeApi = useStoreApi();
+  const { catalog } = useCatalog();
   // Par défaut, glisser sur le canevas déplace la vue (comportement React
   // Flow standard). En mode sélection, un glisser-clic-gauche trace une
   // boîte de sélection à la place ; le déplacement reste possible au
@@ -203,7 +204,7 @@ function FlowCanvasInner() {
       };
       setNodes((current) => current.concat(newNode));
     },
-    [screenToFlowPosition, setNodes, onToggleGroup],
+    [screenToFlowPosition, setNodes, onToggleGroup, catalog],
   );
 
   // Voir plus bas (onCanvasMouseUp) : mémorise l'id du rectangle qu'on

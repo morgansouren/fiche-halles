@@ -1,0 +1,139 @@
+/* Formulaire de création d'appareil : recouvre tout l'écran (overlay),
+   comme n'importe quelle boîte de dialogue modale — le canevas reste
+   inerte tant qu'on ne l'a pas fermé. */
+.device-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.device-form-panel {
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  background: var(--canvas-bg);
+  border: 1px solid var(--device-text-light);
+  border-radius: 6px;
+  padding: 16px 20px;
+  color: var(--text-primary);
+  font-family: var(--font-technical);
+}
+
+.device-form-panel h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.device-form-panel h3 {
+  margin: 16px 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.device-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.device-form-field input[type="text"],
+.device-form-field select {
+  background: var(--surface-panel-bg);
+  border: 1px solid var(--surface-panel-border);
+  color: var(--text-primary);
+  padding: 5px 6px;
+  font-family: inherit;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+.device-form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.device-form-port-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.8fr 1fr auto;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.device-form-port-row input,
+.device-form-port-row select {
+  background: var(--surface-panel-bg);
+  border: 1px solid var(--surface-panel-border);
+  color: var(--text-primary);
+  padding: 4px 5px;
+  font-family: inherit;
+  font-size: 11px;
+  border-radius: 3px;
+  min-width: 0;
+}
+
+.device-form-port-remove {
+  background: transparent;
+  border: 1px solid var(--surface-panel-border);
+  color: var(--text-primary);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 2px 7px;
+}
+
+.device-form-add-port {
+  background: transparent;
+  border: 1px dashed var(--surface-panel-border);
+  color: var(--text-secondary);
+  border-radius: 3px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.device-form-error {
+  color: var(--invalid);
+  font-size: 12px;
+  margin: 10px 0 0;
+}
+
+.device-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.device-form-actions button {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.device-form-cancel {
+  background: transparent;
+  border: 1px solid var(--surface-panel-border);
+  color: var(--text-primary);
+}
+
+.device-form-save {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--bp-navy-950);
+  font-weight: 700;
+}
