@@ -96,7 +96,11 @@ function groupTogglesByFamily(groups: PortGroupDef[]): PortGroupDef[][] {
 
 export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
   const { model, hiddenGroups, onToggleGroup, hideUnusedPorts, usedPortIds } = data;
-  const isSwitch = model.category === "switch";
+  // Une rangée horizontale, tous les ports toujours visibles, aucun
+  // bouton de groupe — pour les appareils dont les ports se présentent
+  // ainsi physiquement (switches réseau, racks HF...), pas seulement les
+  // switches : voir DeviceModel.layout dans domain/equipment.ts.
+  const isHorizontal = model.layout === "horizontal";
 
   // "Masquer les ports inutilisés" est un filtre en plus de celui des
   // groupes, pas un remplacement : un port peut très bien appartenir à un
@@ -129,7 +133,7 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
       <div className="device-node-title">
         {deviceTitleHasBadge(model) ? <span className="device-node-title-badge">{model.name}</span> : model.name}
       </div>
-      {!hideUnusedPorts && groups.length > 0 && (
+      {!isHorizontal && !hideUnusedPorts && groups.length > 0 && (
         <div className="device-node-toggles">
           {toggleFamilies.map((family) => (
             <div className="device-node-toggle-family" key={family[0].id}>
@@ -155,7 +159,7 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
           ))}
         </div>
       )}
-      {isSwitch ? (
+      {isHorizontal ? (
         <div className="device-node-switch-body">
           {groupPortsByVlan(model.ports)
             .map((vlan) => ({ ...vlan, ports: vlan.ports.filter(isUsed) }))

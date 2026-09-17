@@ -525,6 +525,7 @@ export const catalog: DeviceModel[] = [
     id: "gigacore-luminex",
     name: "Gigacore Luminex",
     category: "switch",
+    layout: "horizontal",
     ports: [
       // Lumière
       { id: "port-1", label: "Port 1", protocol: "Ethernet", direction: "inout", group: "Lumière" },
@@ -549,6 +550,7 @@ export const catalog: DeviceModel[] = [
     id: "netgear",
     name: "Netgear",
     category: "switch",
+    layout: "horizontal",
     ports: [
       { id: "port-1", label: "1", protocol: "Ethernet", direction: "inout" },
       { id: "port-2", label: "2", protocol: "Ethernet", direction: "inout" },
@@ -564,6 +566,7 @@ export const catalog: DeviceModel[] = [
     id: "4x-recepteurs-ew500",
     name: "4x Récepteurs Ew500",
     category: "rf",
+    layout: "horizontal",
     ports: [
       // Out
       { id: "analog-out-1", label: "Analog Out 1", protocol: "Analog", direction: "out" },

@@ -40,4 +40,10 @@ export interface DeviceModel {
   name: string;
   category: DeviceCategory;
   ports: Port[];
+  // Affichage en une seule rangée horizontale, tous les ports toujours
+  // visibles (pas de bouton masquer/afficher par groupe) — pour les
+  // appareils dont les ports se présentent physiquement ainsi (switches
+  // réseau, racks HF...). Par défaut (absent) : les deux colonnes
+  // habituelles, avec groupes masquables.
+  layout?: "horizontal";
 }
