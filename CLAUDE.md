@@ -67,8 +67,20 @@ The user hand-edits `src/domain/catalog.ts` directly (adding real device models,
 `canvas/portVisibility.ts` computes which ports a device shows/hides — computed fresh from a
 device's port list (not a static enum). Analog In/Out are chunked into groups of 8; other protocols
 group as a whole (Aux, MIDI, "other" catch-all) or stay always-visible (Dante/AES50/Snake/Ethernet/
-Speakon are never groupable). All groups start hidden by default (`allGroupsHidden`), so a freshly
-dropped device shows only its ungroupable ports until the user toggles a group on.
+Speakon are never groupable). All groups start hidden by default (`defaultHiddenGroups`), except
+Analog In on an `amplifier` category device (visible by default — a Nxamp only has 4, hiding them
+gains nothing). A device with `DeviceModel.layout === "horizontal"` (network switches, HF racks)
+bypasses this whole group/hide system: `DeviceNode.tsx` renders a single row of always-visible ports
+instead of the usual two columns, with no toggle buttons at all — see `groupPortsByVlan` and
+`isHorizontal` in that file. `Port.group` (e.g. a switch's VLAN name, or just a label like "Analog
+Out") drives the little heading shown above a cluster of ports in that layout; it's presentation-only
+and has no effect on connection rules.
+
+Separately, the toolbar's "Masquer les ports inutilisés" is a *display filter*, not a `hiddenGroups`
+mutation: `FlowCanvas.tsx`'s `displayNodes` memo (same derived-not-stored pattern as `routedEdges`,
+see below) injects `hideUnusedPorts` + a live `usedPortIds` set into each device node's data every
+render; `DeviceNode.tsx` combines that with the group-hidden filter (`isUsed`, checked in addition to,
+not instead of, group visibility) and also hides the toggle-button bar entirely while it's on.
 
 ### Routing (`canvas/routing.ts`)
 
@@ -141,6 +153,62 @@ than relying on `static` to suppress them.
 it's now full-width/full-height on purpose, since real patch layouts need the whole screen. Keep
 that in mind if touching `index.css` or `App.tsx`'s top-level flex layout (`Palette` fixed-width on
 the left via `--palette-width`, `<main>` with `flex: 1` taking the rest).
+
+### Canvas node types and the derived-for-render pattern
+
+`FlowCanvas.tsx` manages three node types in one `CanvasNode = DeviceNodeType | TextNodeType |
+RectNodeType` union: `device` (the equipment cards), `text` (free-form notes, `TextNode.tsx`) and
+`rect` (layout frames, `RectNode.tsx`). `text` and `rect` are purely decorative — independent of
+`domain/`, excluded from cable-routing obstacles (the `node.type === "device"` filter in
+`routedEdges`), and untouched by the device-only logic in `onToggleGroup`/`displayNodes` (each narrows
+on `node.type` before touching type-specific `data` fields). Adding a fourth decorative node type
+should follow the same three exclusions.
+
+Established convention for anything that needs to reflect current `nodes`/`edges` state but shouldn't
+be persisted back into it: compute it in a `useMemo` keyed on the state it reads (`routedEdges` for
+cable paths, `displayNodes` for the hide-unused-ports overlay), and feed the *derived* value to
+`<ReactFlow>`, never write it back via `setNodes`. This keeps the controlled `nodes`/`edges` state as
+the single source of truth and avoids feedback loops.
+
+### Toolbar tools and the pane-click deselection gotcha
+
+`Toolbar.tsx`'s `activeTool` (`pan`/`select`/`text`/`rect`) switches how a plain drag on empty canvas
+behaves. React Flow exposes `onPaneClick` (single click) but no `onPaneMouseDown`/`onPaneMouseUp` —
+a drag-to-draw tool (`rect`) is implemented with raw `onMouseDown`/`onMouseMove`/`onMouseUp` on the
+wrapping `<div>`, gated on the mousedown target being exactly `.react-flow__pane` (never a node).
+
+Non-obvious failure mode this ran into: a plain mousedown+mouseup (no real drag) always fires a
+trailing native `click` afterward, which React Flow uses internally to deselect everything on the
+pane — and that click is dispatched *after* your own `mouseup` handler runs. Marking the
+just-drawn/just-created node `selected: true` inside `onMouseUp` gets silently undone a moment later
+by that deselection. Fix: don't select it in `onMouseUp` — stash its id in a ref and select it inside
+`onPaneClick` instead, since React Flow calls that hook *after* its own deselection pass (this is also
+why a `text` note created via `onPaneClick` was never affected — its selection was always being set
+inside that same hook to begin with).
+
+### Screen-space vs flow-space measurement
+
+`getBoundingClientRect()` on any element inside `.react-flow__viewport` returns **screen pixels**,
+already multiplied by the current zoom — but `node.width`/`node.height` (and anything else fed back
+into node state) are in **flow-space** units, independent of zoom. `TextNode.tsx`'s auto-fit-to-text
+sizing measures a hidden mirror `<span>` and must divide the measured `rect.width`/`rect.height` by
+`useViewport().zoom` before using them — omitting this works fine at the default zoom (1) but breaks
+progressively at any other zoom level (each keystroke's mis-scaled measurement compounds, converging
+the box toward its minimum size). Any future measure-a-DOM-node-for-sizing code needs the same
+division.
+
+### Custom devices and the open `DeviceCategory` type
+
+Users can create devices from the UI (Palette's "+ Nouvel appareil", `CreateDeviceForm.tsx`) in
+addition to the hand-edited `domain/catalog.ts`. `domain/CatalogContext.tsx` provides the merged list
+(`useCatalog()`) plus `addCustomDevice`/`updateCustomDevice`/`deleteCustomDevice`; custom devices are
+persisted to **`localStorage`** (`domain/customDevices.ts`), not to `catalog.ts` — they're local to
+the browser, not shared or committed. `Palette.tsx` shows an edit/delete button pair only on entries
+whose id is in `customDeviceIds`, never on built-in catalog entries. Editing keeps the same device
+`id` even if the name changes (regenerating it would be pointless churn, nothing currently references
+devices by a "stable name"). `DeviceCategory` (`domain/equipment.ts`) was widened from a closed union
+to known-literals-plus-`(string & {})` specifically so users can type an arbitrary new category name
+from the form while existing code (autocomplete on the known ones) still works.
 
 ### Custom node types get no free CSS
 
