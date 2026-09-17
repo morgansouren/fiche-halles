@@ -22,6 +22,14 @@
   padding: 16px 20px;
   color: var(--text-primary);
   font-family: var(--font-technical);
+  /* Sans ça, un <select> hérite du color-scheme "light dark" du :root
+     (index.css) — la partie native que le CSS ne peut pas styler (la
+     liste déroulante elle-même, pas la boîte fermée) se rend alors avec
+     la palette claire du navigateur : fond blanc, texte hérité clair
+     (--text-primary, pensé pour un fond sombre) illisible dessus. Fixer
+     ce panneau en dark force cette liste à utiliser la palette sombre du
+     navigateur (fond sombre, texte clair) à la place. */
+  color-scheme: dark;
 }
 
 .device-form-panel h2 {
@@ -54,6 +62,15 @@
   font-family: inherit;
   font-size: 12px;
   border-radius: 3px;
+}
+
+/* Filet de sécurité en plus de color-scheme ci-dessus : certains moteurs
+   ne reteintent pas entièrement la liste déroulante sans un style
+   explicite sur les <option> elles-mêmes. */
+.device-form-field select option,
+.device-form-port-row select option {
+  background: var(--bp-navy-900);
+  color: var(--text-primary);
 }
 
 .device-form-checkbox {
