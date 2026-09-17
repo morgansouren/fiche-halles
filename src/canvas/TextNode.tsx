@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { NodeResizer, type Node, type NodeProps } from "@xyflow/react";
+import { NodeResizer, useViewport, type Node, type NodeProps } from "@xyflow/react";
 import "./TextNode.css";
 
 export type TextNodeType = Node<
@@ -52,6 +52,15 @@ export function TextNode({ data, selected, width, height }: NodeProps<TextNodeTy
   const [isEditing, setIsEditing] = useState(data.text === "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
+  // getBoundingClientRect() renvoie une taille en pixels-écran, déjà
+  // multipliée par le zoom courant du canevas (tout le contenu du flow
+  // est à l'intérieur d'un conteneur mis à l'échelle par React Flow). Or
+  // node.width/height (ce que data.onAutoFit pose) sont en unités de
+  // canevas, pas en pixels-écran — sans cette division, la mesure était
+  // fausse dès que le zoom s'écartait de 1, l'erreur s'accumulant à
+  // chaque frappe jusqu'à coincer la boîte près de son minimum (elle
+  // semblait alors ne jamais suivre au-delà du premier mot tapé).
+  const { zoom } = useViewport();
 
   useEffect(() => {
     if (!isEditing || !textareaRef.current) return;
@@ -67,13 +76,14 @@ export function TextNode({ data, selected, width, height }: NodeProps<TextNodeTy
   useLayoutEffect(() => {
     if (!isEditing || !measureRef.current) return;
     const rect = measureRef.current.getBoundingClientRect();
-    const fitWidth = Math.max(TEXT_NODE_MIN_WIDTH, Math.ceil(rect.width));
-    const fitHeight = Math.max(TEXT_NODE_MIN_HEIGHT, Math.ceil(rect.height));
+    const fitWidth = Math.max(TEXT_NODE_MIN_WIDTH, Math.ceil(rect.width / zoom));
+    const fitHeight = Math.max(TEXT_NODE_MIN_HEIGHT, Math.ceil(rect.height / zoom));
     data.onAutoFit(fitWidth, fitHeight);
     // data.onAutoFit est une fermeture stable (voir FlowCanvas.tsx) ; seul
-    // le texte doit redéclencher une mesure, pas son identité à chaque rendu.
+    // le texte (et le zoom, dont dépend la conversion écran -> canevas)
+    // doit redéclencher une mesure, pas l'identité de la fermeture.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditing, data.text]);
+  }, [isEditing, data.text, zoom]);
 
   const baseWidth = data.baseWidth ?? TEXT_NODE_MIN_WIDTH;
   const baseHeight = data.baseHeight ?? TEXT_NODE_MIN_HEIGHT;
