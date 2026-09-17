@@ -545,4 +545,19 @@ export const catalog: DeviceModel[] = [
       { id: "port-12", label: "Port 12", protocol: "Ethernet", direction: "inout", group: "Link" },
     ],
   },
+  {
+    id: "netgear",
+    name: "Netgear",
+    category: "switch",
+    ports: [
+      { id: "port-1", label: "1", protocol: "Ethernet", direction: "inout" },
+      { id: "port-2", label: "2", protocol: "Ethernet", direction: "inout" },
+      { id: "port-3", label: "3", protocol: "Ethernet", direction: "inout" },
+      { id: "port-4", label: "4", protocol: "Ethernet", direction: "inout" },
+      { id: "port-5", label: "5", protocol: "Ethernet", direction: "inout" },
+      { id: "port-6", label: "6", protocol: "Ethernet", direction: "inout" },
+      { id: "port-7", label: "7", protocol: "Ethernet", direction: "inout" },
+      { id: "port-8", label: "8", protocol: "Ethernet", direction: "inout" },
+    ],
+  },
 ];

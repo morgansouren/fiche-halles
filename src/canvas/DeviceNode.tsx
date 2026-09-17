@@ -55,10 +55,13 @@ function handleStyle(port: Port): HandleStyle {
   };
 }
 
-// Pour un switch réseau, le protocole (toujours Ethernet) ne distingue pas
-// les ports entre eux : c'est leur groupe (VLAN) qui prend le rôle de
-// --port-color/background que joue le protocole ailleurs.
+// Pour un switch réseau à VLAN, le protocole (toujours Ethernet) ne
+// distingue pas les ports entre eux : c'est leur groupe qui prend le rôle
+// de --port-color/background que joue le protocole ailleurs. Un switch
+// simple sans VLAN (port.group absent, ex. Netgear) garde la couleur de
+// protocole habituelle plutôt qu'une couleur de repli générique.
 function switchHandleStyle(port: Port): HandleStyle {
+  if (!port.group) return handleStyle(port);
   const color = portGroupColor(port.group);
   return { background: color, "--port-color": color };
 }
@@ -159,10 +162,15 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
             .filter((vlan) => vlan.ports.length > 0)
             .map((vlan) => (
             <div className="device-node-switch-group" key={vlan.label}>
-              <div className="device-node-switch-group-label">
-                <span className="device-node-switch-group-swatch" style={{ background: portGroupColor(vlan.label) }} />
-                {vlan.label}
-              </div>
+              {/* Un switch sans VLAN (ex. Netgear) n'a qu'un seul groupe
+                  au label vide (port.group jamais renseigné) : pas de
+                  bandeau à afficher dans ce cas, juste la rangée de ports. */}
+              {vlan.label && (
+                <div className="device-node-switch-group-label">
+                  <span className="device-node-switch-group-swatch" style={{ background: portGroupColor(vlan.label) }} />
+                  {vlan.label}
+                </div>
+              )}
               <div className="device-node-switch-group-ports">
                 {vlan.ports.map((port) => (
                   <div className="device-node-switch-port" key={port.id} title={port.label}>
