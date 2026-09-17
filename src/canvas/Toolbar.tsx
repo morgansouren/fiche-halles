@@ -1,6 +1,6 @@
 import "./Toolbar.css";
 
-export type Tool = "pan" | "select" | "text";
+export type Tool = "pan" | "select" | "text" | "rect";
 
 export interface ToolbarProps {
   activeTool: Tool;
@@ -13,10 +13,10 @@ export interface ToolbarProps {
   onToggleHideUnusedPorts: () => void;
 }
 
-// Barre d'outils de mise en page du canevas. Deux outils de glisser
-// (sélection multiple par boîte, note de texte libre) et un bouton
-// bascule de vue (masquer les ports inutilisés) ; les futurs outils de
-// dessin (rectangle...) viendront s'ajouter ici, dans le même panneau.
+// Barre d'outils de mise en page du canevas. Trois outils de glisser
+// (sélection multiple par boîte, note de texte libre, rectangle) et un
+// bouton bascule de vue (masquer les ports inutilisés) ; les futurs
+// outils viendront s'ajouter ici, dans le même panneau.
 export function Toolbar({ activeTool, onSelectTool, hideUnusedPorts, onToggleHideUnusedPorts }: ToolbarProps) {
   return (
     <div className="canvas-toolbar">
@@ -35,6 +35,14 @@ export function Toolbar({ activeTool, onSelectTool, hideUnusedPorts, onToggleHid
         title="Cliquer sur le canevas pour poser une note de texte libre"
       >
         Texte
+      </button>
+      <button
+        type="button"
+        className={`canvas-toolbar-button${activeTool === "rect" ? " canvas-toolbar-button-active" : ""}`}
+        onClick={() => onSelectTool("rect")}
+        title="Cliquer-glisser sur le canevas pour tracer un rectangle de mise en page"
+      >
+        Rectangle
       </button>
       <button
         type="button"

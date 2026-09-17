@@ -1,0 +1,24 @@
+/* Rectangle de mise en page (regrouper visuellement des appareils sur le
+   canevas) : blanc pour rester lisible sur le fond sombre, intérieur
+   transparent pour ne jamais masquer ce qu'il entoure. zIndex négatif
+   (posé à la création dans FlowCanvas.tsx) pour rester sous les
+   appareils/notes — un cadre de fond, pas un objet qui les recouvre. */
+.rect-node {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 2px solid #fff;
+  border-radius: 2px;
+  background: transparent;
+}
+
+/* Même halo que les câbles au survol (voir .react-flow__edge:hover dans
+   theme.css) : box-shadow plutôt que filter/drop-shadow, plus simple et
+   moins coûteux pour un rectangle plein (drop-shadow a du sens sur un
+   tracé SVG fin, pas ici où le contour est déjà une vraie bordure CSS).
+   Pas de transition — un halo instantané, pas animé (leçon du survol des
+   ports : une transition sur un état visuel proche a déjà provoqué un
+   blocage à mi-chemin). */
+.rect-node:hover {
+  box-shadow: 0 0 3px #fff, 0 0 8px #fff;
+}

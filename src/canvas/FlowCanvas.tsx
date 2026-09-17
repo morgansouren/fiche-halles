@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -17,6 +17,7 @@ import "@xyflow/react/dist/style.css";
 import { catalog } from "../domain/catalog";
 import { DeviceNode, type DeviceNodeType } from "./DeviceNode";
 import { TextNode, TEXT_NODE_MIN_WIDTH, TEXT_NODE_MIN_HEIGHT, type TextNodeType } from "./TextNode";
+import { RectNode, RECT_MIN_SIZE, type RectNodeType } from "./RectNode";
 import { createIsValidConnection } from "./connectionValidation";
 import { DEVICE_MODEL_MIME_TYPE } from "../palette/Palette";
 import { PatchCableEdge } from "./PatchCableEdge";
@@ -25,11 +26,11 @@ import { defaultHiddenGroups } from "./portVisibility";
 import { computeRoutes, type HandleInfo, type RoutingNode } from "./routing";
 import { Toolbar, type Tool } from "./Toolbar";
 
-const nodeTypes = { device: DeviceNode, text: TextNode };
+const nodeTypes = { device: DeviceNode, text: TextNode, rect: RectNode };
 const edgeTypes = { patchCable: PatchCableEdge };
 const defaultEdgeOptions = { type: "patchCable" };
 
-type CanvasNode = DeviceNodeType | TextNodeType;
+type CanvasNode = DeviceNodeType | TextNodeType | RectNodeType;
 
 let nodeIdCounter = 0;
 function nextNodeId(prefix: string): string {
@@ -205,13 +206,35 @@ function FlowCanvasInner() {
     [screenToFlowPosition, setNodes, onToggleGroup],
   );
 
+  // Voir plus bas (onCanvasMouseUp) : mémorise l'id du rectangle qu'on
+  // vient de finir de tracer, pour que onPaneClick (déclenché juste après
+  // par React Flow, une fois sa propre désélection de pane appliquée) le
+  // sélectionne pour de bon.
+  const lastDrawnRectIdRef = useRef<string | null>(null);
+
   // Outil "Texte" : un clic sur le canevas (pane) pose une note vide, déjà
   // sélectionnée et en édition (voir TextNode.tsx, qui entre en édition
   // dès que son texte est vide) ; l'outil se désactive juste après, pour
   // qu'un simple clic ne pose pas une note à chaque fois qu'on clique
   // ensuite sur le canevas.
+  //
+  // Sert aussi à finaliser la sélection d'un rectangle tout juste tracé
+  // (voir onCanvasMouseUp) : un simple mousedown+mouseup sur le même
+  // point déclenche toujours un "click" ensuite, que React Flow utilise
+  // pour désélectionner tout ce qui est sélectionné sur le pane — si on
+  // sélectionnait le rectangle dès le mouseup, ce clic la déferait
+  // aussitôt. En la posant ici, dans le même callback que React Flow
+  // appelle *après* sa propre désélection, la sélection survit — exactement
+  // le mécanisme qui permet déjà à une note de texte de rester
+  // sélectionnée après sa création juste au-dessus.
   const onPaneClick = useCallback(
     (event: React.MouseEvent) => {
+      if (lastDrawnRectIdRef.current) {
+        const id = lastDrawnRectIdRef.current;
+        lastDrawnRectIdRef.current = null;
+        setNodes((current) => current.map((node) => (node.id === id ? { ...node, selected: true } : node)));
+        return;
+      }
       if (activeTool !== "text") return;
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       const id = nextNodeId("text");
@@ -236,6 +259,62 @@ function FlowCanvasInner() {
     [activeTool, screenToFlowPosition, setNodes, onChangeText, onAutoFitText],
   );
 
+  // Outil "Rectangle" : cliquer-glisser sur le canevas (pane, jamais sur
+  // un nœud existant — voir la vérification du target) trace un
+  // rectangle en direct. Contrairement à l'outil Texte (un clic suffit),
+  // ceci demande de suivre un vrai glisser ; React Flow n'expose pas de
+  // onPaneMouseDown/Up dédiés, donc ces gestionnaires sont posés en DOM
+  // brut sur le conteneur englobant (même élément que onDrop/onDragOver).
+  // Un ref (pas un state) pour le point de départ : aucun rendu n'est
+  // nécessaire tant que le rectangle lui-même ne change pas — c'est
+  // setNodes qui déclenche déjà les rendus utiles pendant le glisser.
+  const drawingRectRef = useRef<{ id: string; startX: number; startY: number } | null>(null);
+
+  const onCanvasMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      if (activeTool !== "rect") return;
+      if (!(event.target instanceof HTMLElement) || !event.target.classList.contains("react-flow__pane")) return;
+      const start = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      const id = nextNodeId("rect");
+      drawingRectRef.current = { id, startX: start.x, startY: start.y };
+      const newNode: RectNodeType = {
+        id,
+        type: "rect",
+        position: start,
+        width: RECT_MIN_SIZE,
+        height: RECT_MIN_SIZE,
+        zIndex: -1,
+        data: {},
+      };
+      setNodes((current) => current.map((node): CanvasNode => ({ ...node, selected: false })).concat(newNode));
+    },
+    [activeTool, screenToFlowPosition, setNodes],
+  );
+
+  const onCanvasMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      const drawing = drawingRectRef.current;
+      if (!drawing) return;
+      const current = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      const x = Math.min(drawing.startX, current.x);
+      const y = Math.min(drawing.startY, current.y);
+      const width = Math.max(RECT_MIN_SIZE, Math.abs(current.x - drawing.startX));
+      const height = Math.max(RECT_MIN_SIZE, Math.abs(current.y - drawing.startY));
+      setNodes((nodes) =>
+        nodes.map((node) => (node.id === drawing.id ? { ...node, position: { x, y }, width, height } : node)),
+      );
+    },
+    [screenToFlowPosition, setNodes],
+  );
+
+  const onCanvasMouseUp = useCallback(() => {
+    const drawing = drawingRectRef.current;
+    if (!drawing) return;
+    drawingRectRef.current = null;
+    lastDrawnRectIdRef.current = drawing.id;
+    setActiveTool("pan");
+  }, []);
+
   const onConnect = useCallback(
     (connection: Connection) => {
       if (!createIsValidConnection(nodes, edges)(connection)) return;
@@ -245,7 +324,14 @@ function FlowCanvasInner() {
   );
 
   return (
-    <div style={{ width: "100%", height: "100%" }} onDragOver={onDragOver} onDrop={onDrop}>
+    <div
+      style={{ width: "100%", height: "100%" }}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onMouseDown={onCanvasMouseDown}
+      onMouseMove={onCanvasMouseMove}
+      onMouseUp={onCanvasMouseUp}
+    >
       <ReactFlow
         nodes={displayNodes}
         edges={routedEdges}
@@ -258,7 +344,7 @@ function FlowCanvasInner() {
         connectionMode={ConnectionMode.Loose}
         defaultEdgeOptions={defaultEdgeOptions}
         selectionOnDrag={activeTool === "select"}
-        panOnDrag={activeTool === "select" ? [1, 2] : true}
+        panOnDrag={activeTool === "select" || activeTool === "rect" ? [1, 2] : true}
         onPaneClick={onPaneClick}
         // Ctrl (Windows/Linux) fonctionne déjà par défaut (Meta sur Mac) ;
         // Shift s'ajoute explicitement comme second déclencheur équivalent
