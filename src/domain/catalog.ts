@@ -560,4 +560,16 @@ export const catalog: DeviceModel[] = [
       { id: "port-8", label: "8", protocol: "Ethernet", direction: "inout" },
     ],
   },
+  {
+    id: "4x-recepteurs-ew500",
+    name: "4x Récepteurs Ew500",
+    category: "rf",
+    ports: [
+      // Out
+      { id: "analog-out-1", label: "Analog Out 1", protocol: "Analog", direction: "out" },
+      { id: "analog-out-2", label: "Analog Out 2", protocol: "Analog", direction: "out" },
+      { id: "analog-out-3", label: "Analog Out 3", protocol: "Analog", direction: "out" },
+      { id: "analog-out-4", label: "Analog Out 4", protocol: "Analog", direction: "out" },
+    ],
+  },
 ];
