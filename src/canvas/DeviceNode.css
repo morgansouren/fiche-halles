@@ -5,9 +5,16 @@
    de famille d'appareil, voir deviceColors.ts) — tout le reste du texte de
    la carte (titre, ports, boutons) s'appuie sur `currentColor`/`inherit`
    pour rester lisible quelle que soit la famille, y compris Nxamp dont le
-   fond violet foncé est la seule variante à texte clair. */
+   fond violet foncé est la seule variante à texte clair.
+
+   La bordure, elle, est volontairement fixée à --device-text-light (pas
+   currentColor) : Nxamp l'affichait déjà ainsi puisque currentColor y
+   vaut cette même couleur claire, mais les autres familles (texte sombre)
+   se retrouvaient avec une bordure sombre quasi invisible sur le fond du
+   canevas, lui aussi sombre. Une bordure claire fixe se voit sur toutes
+   les familles, Nxamp y compris (aucun changement pour elle). */
 .device-node {
-  border: 1px solid currentColor;
+  border: 1px solid var(--device-text-light);
   border-radius: 4px;
   font-size: 12px;
   min-width: 140px;
