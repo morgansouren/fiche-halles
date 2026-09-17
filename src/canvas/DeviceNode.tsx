@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground, protocolStrokeColors } from "./protocolColors";
 import { deviceCardStyle, deviceTitleHasBadge } from "./deviceColors";
-import { portGroupColor } from "./portGroupColors";
+import { portGroupColor, hasKnownPortGroupColor } from "./portGroupColors";
 import { computePortGroups, type HiddenGroups, type PortGroupDef } from "./portVisibility";
 import "./DeviceNode.css";
 
@@ -57,13 +57,22 @@ function handleStyle(port: Port): HandleStyle {
 
 // Pour un switch réseau à VLAN, le protocole (toujours Ethernet) ne
 // distingue pas les ports entre eux : c'est leur groupe qui prend le rôle
-// de --port-color/background que joue le protocole ailleurs. Un switch
-// simple sans VLAN (port.group absent, ex. Netgear) garde la couleur de
-// protocole habituelle plutôt qu'une couleur de repli générique.
+// de --port-color/background que joue le protocole ailleurs. Un appareil
+// sans VLAN reconnue (port.group absent, ex. Netgear — ou juste posé pour
+// afficher un intitulé sans code couleur, ex. "Analog Out" sur un rack
+// HF) garde la couleur de protocole habituelle plutôt qu'un repli générique.
 function switchHandleStyle(port: Port): HandleStyle {
-  if (!port.group) return handleStyle(port);
+  if (!hasKnownPortGroupColor(port.group)) return handleStyle(port);
   const color = portGroupColor(port.group);
   return { background: color, "--port-color": color };
+}
+
+// Extrait le numéro final d'un intitulé de port ("Analog Out 3" -> "3"),
+// pour l'afficher en petit au-dessus du point plutôt que le libellé
+// complet (déjà lisible au survol via l'attribut title). Renvoie le
+// libellé tel quel s'il ne se termine pas par un nombre (cas rare).
+function portNumberLabel(port: Port): string {
+  return port.label.match(/(\d+)\s*$/)?.[1] ?? port.label;
 }
 
 // Rassemble les ports consécutifs d'un même groupe (VLAN), dans l'ordre du
@@ -168,16 +177,22 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
             <div className="device-node-switch-group" key={vlan.label}>
               {/* Un switch sans VLAN (ex. Netgear) n'a qu'un seul groupe
                   au label vide (port.group jamais renseigné) : pas de
-                  bandeau à afficher dans ce cas, juste la rangée de ports. */}
+                  bandeau à afficher dans ce cas, juste la rangée de ports.
+                  Le carré témoin de couleur, lui, ne s'affiche que pour une
+                  VLAN reconnue — "Analog Out" sur un rack HF n'est qu'un
+                  intitulé, pas un code couleur. */}
               {vlan.label && (
                 <div className="device-node-switch-group-label">
-                  <span className="device-node-switch-group-swatch" style={{ background: portGroupColor(vlan.label) }} />
+                  {hasKnownPortGroupColor(vlan.label) && (
+                    <span className="device-node-switch-group-swatch" style={{ background: portGroupColor(vlan.label) }} />
+                  )}
                   {vlan.label}
                 </div>
               )}
               <div className="device-node-switch-group-ports">
                 {vlan.ports.map((port) => (
                   <div className="device-node-switch-port" key={port.id} title={port.label}>
+                    <span className="device-node-switch-port-number">{portNumberLabel(port)}</span>
                     <Handle
                       id={port.id}
                       type={handleTypeFor(port)}

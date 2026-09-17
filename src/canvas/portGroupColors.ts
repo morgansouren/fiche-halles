@@ -17,3 +17,11 @@ export function portGroupColor(group: string | undefined): string {
   if (!group) return FALLBACK_COLOR;
   return PORT_GROUP_COLORS[group] ?? FALLBACK_COLOR;
 }
+
+// Un `group` qui n'est pas une VLAN connue (ex. "Analog Out" sur un rack
+// HF, posé juste pour afficher un bandeau/regrouper les ports, sans
+// intention de code couleur) ne doit pas faire basculer les points sur
+// le repli générique — voir switchHandleStyle() dans DeviceNode.tsx.
+export function hasKnownPortGroupColor(group: string | undefined): boolean {
+  return !!group && group in PORT_GROUP_COLORS;
+}

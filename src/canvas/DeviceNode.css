@@ -221,9 +221,26 @@
   flex-shrink: 0;
 }
 
+/* Écart généreux (pas juste 6px) : avec un numéro au-dessus de chaque
+   point, les ports ont besoin d'air pour rester lisibles, et ça les
+   étale mieux sur la largeur de la carte plutôt que de les laisser
+   se tasser à gauche du groupe. */
 .device-node-switch-group-ports {
   display: flex;
-  gap: 6px;
+  gap: 16px;
+}
+
+.device-node-switch-port {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.device-node-switch-port-number {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 /* Le point d'ancrage (le centre) ne bouge pas : transform scale grandit
