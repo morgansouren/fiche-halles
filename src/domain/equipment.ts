@@ -33,7 +33,7 @@ export interface Port {
   group?: string;
 }
 
-export type DeviceCategory = "console" | "converter" | "speaker" | "amplifier" | "switch";
+export type DeviceCategory = "console" | "converter" | "speaker" | "amplifier" | "switch" | "rf";
 
 export interface DeviceModel {
   id: string;

@@ -12,6 +12,7 @@ const categoryLabels: Record<DeviceModel["category"], string> = {
   speaker: "Enceintes",
   amplifier: "Amplificateurs",
   switch: "Switches",
+  rf: "Récepteurs / Émetteurs HF",
 };
 
 function handleDragStart(event: React.DragEvent, model: DeviceModel) {
