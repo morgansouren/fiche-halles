@@ -102,11 +102,14 @@
 
 /* Bouton d'ouverture du formulaire de création — pointillés plutôt qu'une
    boîte pleine comme .palette-item : il ne se glisse pas sur le canevas,
-   il ne doit pas se confondre visuellement avec un appareil du catalogue. */
+   il ne doit pas se confondre visuellement avec un appareil du catalogue.
+   Marge haute large (pas juste 16px comme entre deux catégories) : il ne
+   doit pas sembler rattaché à la dernière catégorie au-dessus de lui
+   (ex. Switches) — il s'applique à toutes, pas seulement celle-là. */
 .palette-create-button {
   display: block;
   width: 100%;
-  margin-top: 16px;
+  margin-top: 40px;
   padding: 10px 8px;
   border: 1px dashed rgba(255, 255, 255, 0.6);
   border-radius: 4px;
