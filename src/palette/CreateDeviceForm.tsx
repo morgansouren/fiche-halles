@@ -37,22 +37,38 @@ function newDraftPort(): DraftPort {
 
 export interface CreateDeviceFormProps {
   existingCategories: string[];
+  // Présent = on édite cet appareil existant (id conservé tel quel, pas
+  // régénéré même si le nom change) ; absent = création d'un nouvel
+  // appareil (voir Palette.tsx, qui choisit lequel selon le bouton cliqué).
+  initialModel?: DeviceModel;
   onCancel: () => void;
   onSave: (model: DeviceModel) => void;
 }
 
-// Formulaire de création d'un appareil personnalisé : nom, catégorie
-// (existante ou nouvelle), disposition, et une liste de ports définis un
-// par un. Enregistrer construit un DeviceModel classique (id/ports en
-// slugs générés à partir des libellés saisis) et le confie à onSave, qui
-// se charge de la persistance (voir CatalogContext.tsx).
-export function CreateDeviceForm({ existingCategories, onCancel, onSave }: CreateDeviceFormProps) {
+function draftPortsFrom(model: DeviceModel | undefined): DraftPort[] {
+  if (!model || model.ports.length === 0) return [newDraftPort()];
+  return model.ports.map((port) => ({
+    key: crypto.randomUUID(),
+    label: port.label,
+    protocol: port.protocol,
+    direction: port.direction,
+    group: port.group ?? "",
+  }));
+}
+
+// Formulaire de création (ou d'édition, si initialModel est fourni) d'un
+// appareil personnalisé : nom, catégorie (existante ou nouvelle),
+// disposition, et une liste de ports définis un par un. Enregistrer
+// construit un DeviceModel classique et le confie à onSave, qui se charge
+// de la persistance (voir CatalogContext.tsx).
+export function CreateDeviceForm({ existingCategories, initialModel, onCancel, onSave }: CreateDeviceFormProps) {
   const { catalog } = useCatalog();
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState(existingCategories[0] ?? NEW_CATEGORY_VALUE);
+  const isEditing = !!initialModel;
+  const [name, setName] = useState(initialModel?.name ?? "");
+  const [category, setCategory] = useState(initialModel?.category ?? existingCategories[0] ?? NEW_CATEGORY_VALUE);
   const [newCategory, setNewCategory] = useState("");
-  const [layoutHorizontal, setLayoutHorizontal] = useState(false);
-  const [ports, setPorts] = useState<DraftPort[]>([newDraftPort()]);
+  const [layoutHorizontal, setLayoutHorizontal] = useState(initialModel?.layout === "horizontal");
+  const [ports, setPorts] = useState<DraftPort[]>(() => draftPortsFrom(initialModel));
   const [error, setError] = useState<string | null>(null);
 
   const isNewCategory = category === NEW_CATEGORY_VALUE;
@@ -82,8 +98,11 @@ export function CreateDeviceForm({ existingCategories, onCancel, onSave }: Creat
       return;
     }
 
-    const existingIds = new Set(catalog.map((model) => model.id));
-    const id = uniqueId(slugify(trimmedName), existingIds);
+    // En édition, l'id reste celui de l'appareil existant même si le nom
+    // change — pas de raison de le régénérer pour une simple correction.
+    const id = initialModel
+      ? initialModel.id
+      : uniqueId(slugify(trimmedName), new Set(catalog.map((model) => model.id)));
 
     const usedPortIds = new Set<string>();
     const finalPorts: Port[] = filledPorts.map((port) => {
@@ -111,7 +130,7 @@ export function CreateDeviceForm({ existingCategories, onCancel, onSave }: Creat
   return (
     <div className="device-form-overlay" onClick={onCancel}>
       <div className="device-form-panel" onClick={(event) => event.stopPropagation()}>
-        <h2>Nouvel appareil</h2>
+        <h2>{isEditing ? "Modifier l'appareil" : "Nouvel appareil"}</h2>
 
         <label className="device-form-field">
           Nom
@@ -194,7 +213,7 @@ export function CreateDeviceForm({ existingCategories, onCancel, onSave }: Creat
             Annuler
           </button>
           <button type="button" className="device-form-save" onClick={handleSave}>
-            Enregistrer
+            {isEditing ? "Enregistrer les modifications" : "Enregistrer"}
           </button>
         </div>
       </div>

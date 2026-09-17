@@ -31,8 +31,9 @@ function handleDragStart(event: React.DragEvent, model: DeviceModel) {
 }
 
 export function Palette() {
-  const { catalog, addCustomDevice } = useCatalog();
+  const { catalog, customDeviceIds, addCustomDevice, updateCustomDevice, deleteCustomDevice } = useCatalog();
   const [isCreating, setIsCreating] = useState(false);
+  const [editingModel, setEditingModel] = useState<DeviceModel | null>(null);
   const categories = Array.from(new Set(catalog.map((model) => model.category)));
 
   return (
@@ -42,16 +43,52 @@ export function Palette() {
           <h3>{categoryLabel(category)}</h3>
           {catalog
             .filter((model) => model.category === category)
-            .map((model) => (
-              <div
-                key={model.id}
-                className="palette-item"
-                draggable
-                onDragStart={(event) => handleDragStart(event, model)}
-              >
-                {model.name}
-              </div>
-            ))}
+            .map((model) => {
+              const isCustom = customDeviceIds.has(model.id);
+              return (
+                <div
+                  key={model.id}
+                  className="palette-item"
+                  draggable
+                  onDragStart={(event) => handleDragStart(event, model)}
+                >
+                  <span className="palette-item-label">{model.name}</span>
+                  {/* Seuls les appareils créés depuis l'interface sont
+                      modifiables/supprimables ici — jamais le catalogue
+                      intégré, qui reste un fichier source (catalog.ts). */}
+                  {isCustom && (
+                    <span className="palette-item-actions">
+                      <button
+                        type="button"
+                        className="palette-item-action"
+                        title="Modifier cet appareil"
+                        draggable={false}
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setEditingModel(model);
+                        }}
+                      >
+                        E
+                      </button>
+                      <button
+                        type="button"
+                        className="palette-item-action palette-item-action-delete"
+                        title="Supprimer cet appareil"
+                        draggable={false}
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          deleteCustomDevice(model.id);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                </div>
+              );
+            })}
         </div>
       ))}
 
@@ -66,6 +103,18 @@ export function Palette() {
           onSave={(model) => {
             addCustomDevice(model);
             setIsCreating(false);
+          }}
+        />
+      )}
+
+      {editingModel && (
+        <CreateDeviceForm
+          existingCategories={categories}
+          initialModel={editingModel}
+          onCancel={() => setEditingModel(null)}
+          onSave={(model) => {
+            updateCustomDevice(editingModel.id, model);
+            setEditingModel(null);
           }}
         />
       )}

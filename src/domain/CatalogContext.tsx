@@ -12,7 +12,13 @@ import { loadCustomDevices, saveCustomDevices } from "./customDevices";
 // de page).
 interface CatalogContextValue {
   catalog: DeviceModel[];
+  // Seuls les appareils dont l'id figure ici sont modifiables/supprimables
+  // depuis la palette (voir Palette.tsx) — jamais le catalogue intégré,
+  // qui reste un fichier source à éditer à la main.
+  customDeviceIds: Set<string>;
   addCustomDevice: (model: DeviceModel) => void;
+  updateCustomDevice: (id: string, model: DeviceModel) => void;
+  deleteCustomDevice: (id: string) => void;
 }
 
 const CatalogContext = createContext<CatalogContextValue | null>(null);
@@ -28,9 +34,30 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const catalog = useMemo(() => [...builtinCatalog, ...customDevices], [customDevices]);
+  const updateCustomDevice = (id: string, model: DeviceModel) => {
+    setCustomDevices((current) => {
+      const next = current.map((existing) => (existing.id === id ? model : existing));
+      saveCustomDevices(next);
+      return next;
+    });
+  };
 
-  return <CatalogContext.Provider value={{ catalog, addCustomDevice }}>{children}</CatalogContext.Provider>;
+  const deleteCustomDevice = (id: string) => {
+    setCustomDevices((current) => {
+      const next = current.filter((existing) => existing.id !== id);
+      saveCustomDevices(next);
+      return next;
+    });
+  };
+
+  const catalog = useMemo(() => [...builtinCatalog, ...customDevices], [customDevices]);
+  const customDeviceIds = useMemo(() => new Set(customDevices.map((model) => model.id)), [customDevices]);
+
+  return (
+    <CatalogContext.Provider value={{ catalog, customDeviceIds, addCustomDevice, updateCustomDevice, deleteCustomDevice }}>
+      {children}
+    </CatalogContext.Provider>
+  );
 }
 
 export function useCatalog(): CatalogContextValue {
