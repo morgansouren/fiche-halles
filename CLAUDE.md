@@ -109,7 +109,11 @@ Three-layer architecture, deliberately kept in sync by hand (no build-time indir
 3. **React Flow bridge** (`.react-flow { --xy-*: var(--...) }`) — copies semantic tokens into the
    `--xy-*` variables React Flow actually reads, scoped to `.react-flow`.
 
-A `[data-theme="print"]` variant (a future light/printable theme) is meant to only redefine layer 2.
+A `[data-theme="print"]` variant (light/printable, used for PDF export — see below) redefines only
+layer 2, exactly as designed. One primitive had to become a semantic token retroactively to keep that
+promise: the React Flow bridge originally pointed `--xy-edge-stroke-default` straight at the primitive
+`--bp-line-600`; print needed to override that fallback stroke color without touching a primitive of
+the *screen* theme, so it's now routed through a new semantic `--edge-default-stroke` token instead.
 
 `theme.css` is imported in `main.tsx` **after** `App` specifically so it loads after React Flow's own
 `@xyflow/react/dist/style.css` (imported inside `FlowCanvas.tsx`) — CSS specificity ties break by
@@ -128,6 +132,46 @@ token that happens to look right (e.g. don't point a new decoration at `--bp-sig
 `--bp-invalid`). This has been done deliberately for the palette gradient, the device-family colors,
 and the invalid-connection red — a future change to a protocol/alert color must never accidentally
 shift an unrelated decoration.
+
+### Print / PDF export (`canvas/exportPrint.ts`, `RectNode.tsx`)
+
+The Rectangle tool doubles as an export-zone selector: once a drawn `rect` node is selected, its
+`NodeToolbar` (from React Flow — shown only while `selected`) offers an A4/A3 page-size choice plus
+"Imprimer"/"PDF" buttons. `positionAbsoluteX/Y` + `width`/`height` from the rect's own `NodeProps`
+give its bounds directly, in flow-space — no extra store query needed.
+
+`exportPrint.ts` is plain TypeScript (no React), following the same reuse-for-later intent as
+`domain/`: `getViewportForBounds` (from `@xyflow/react`) computes the `{x, y, zoom}` transform that
+frames those bounds inside the target page's pixel dimensions (page size in mm → px at a fixed DPI,
+minus print margins); `html-to-image`'s `toJpeg` captures `.react-flow__viewport` with that transform
+applied via its own `style` override (a clone-only override — the live/visible canvas is never
+touched); `jsPDF` embeds the resulting image and either triggers `doc.save()` (PDF download) or
+`doc.autoPrint()` + opens the blob URL in a new tab (print, relying on the browser's own print UI for
+that blob).
+
+While capturing, `document.documentElement.dataset.theme` is set to `"print"` for the duration (inside
+try/finally) so the `[data-theme="print"]` CSS variant (see Theming above) is active only for that
+capture — this causes a brief, accepted flash on the live page, since CSS custom properties are
+global and this isn't done inside an isolated iframe. Two lessons from getting this right:
+- **PNG bloats through jsPDF's embedding path.** A ~450KB `toPng` capture became a ~10MB PDF; isolated
+  by comparing the raw `dataUrl.length` against the final file size. Switching the whole pipeline to
+  JPEG (`toJpeg`, quality `0.92`) dropped that to ~130KB with no visible quality loss for this
+  text/line-heavy content — prefer JPEG here over "just compress the PNG harder."
+- **The rectangle bakes itself into its own export** unless explicitly excluded: `toJpeg`'s `filter`
+  option skips any DOM node whose `dataset.id` matches the rect's own React Flow `id` (threaded
+  through as `excludeNodeId`), otherwise its border and resize handles show up in the captured image.
+
+**Stacking-context gotcha specific to `NodeToolbar`:** its z-index derives from the node's own
+`zIndex` (+1), but that only competes *within* `.react-flow__renderer`'s own fixed z-index (4, set by
+the library) — structurally below `.react-flow__panel`'s fixed z-index (5), which is what the
+persistent top-center canvas `<Toolbar>` uses. No inline `style={{ zIndex: ... }}` on a descendant can
+outrank an ancestor stacking context's own rank relative to its siblings. A rectangle's export toolbar
+positioned above the rect (`Position.Top`) could end up visually present but unclickable near the top
+of the screen — a click there actually lands on the permanent toolbar underneath (confirmed via
+`document.elementFromPoint`, and by walking the ancestor chain with `getComputedStyle` to compare
+z-indexes). Fixed by moving the toolbar to `Position.Bottom` (avoids the collision in the common case)
+plus keeping an inline `zIndex: 1000` as a secondary safety net for same-level overlaps elsewhere
+(e.g. against a device card).
 
 ### The recurring CSS/React gotcha
 
@@ -174,17 +218,31 @@ the single source of truth and avoids feedback loops.
 
 `Toolbar.tsx`'s `activeTool` (`pan`/`select`/`text`/`rect`) switches how a plain drag on empty canvas
 behaves. React Flow exposes `onPaneClick` (single click) but no `onPaneMouseDown`/`onPaneMouseUp` —
-a drag-to-draw tool (`rect`) is implemented with raw `onMouseDown`/`onMouseMove`/`onMouseUp` on the
-wrapping `<div>`, gated on the mousedown target being exactly `.react-flow__pane` (never a node).
+a drag-to-draw tool (`rect`) is implemented with raw `onMouseDown`/`onMouseMove` on the wrapping
+`<div>`, gated on the mousedown target being exactly `.react-flow__pane` (never a node).
 
-Non-obvious failure mode this ran into: a plain mousedown+mouseup (no real drag) always fires a
-trailing native `click` afterward, which React Flow uses internally to deselect everything on the
-pane — and that click is dispatched *after* your own `mouseup` handler runs. Marking the
-just-drawn/just-created node `selected: true` inside `onMouseUp` gets silently undone a moment later
-by that deselection. Fix: don't select it in `onMouseUp` — stash its id in a ref and select it inside
-`onPaneClick` instead, since React Flow calls that hook *after* its own deselection pass (this is also
-why a `text` note created via `onPaneClick` was never affected — its selection was always being set
-inside that same hook to begin with).
+Non-obvious failure mode this ran into (real bug, only visible in actual usage — not caught by the
+first round of Playwright checks): the natural first instinct is to select the just-drawn rectangle
+inside a `mouseup` handler on that same wrapping `<div>` (or to defer it one tick further, into
+`onPaneClick`, reasoning that React Flow fires that *after* its own pane-deselection pass). Both are
+unreliable, for two separate reasons:
+- React Flow calls `stopPropagation()` on the native `mouseup` that ends a gesture on the pane, so a
+  handler attached via React's normal synthetic bubble-phase delegation on an ancestor **never
+  fires** at all — there's no click to catch later either.
+- If the mouseup lands exactly on an *existing device node* (a very common case — rectangles are
+  often drawn to frame existing devices), React Flow selects that node directly as part of its own
+  mouseup handling, without waiting for any click — silently overriding the rectangle's selection
+  even when the click-based approach does fire.
+
+Fix: a native, capture-phase `window.addEventListener("mouseup", handler, true)` (registered in a
+`useEffect`, capture phase always runs root-to-target before any descendant/library handler gets a
+chance to stop it), which sets `selected: true` on the drawn rect directly and calls the native
+event's own `stopPropagation()` to preempt React Flow's competing selection logic. A second guard —
+`suppressNextClickRef` read inside `onClickCapture` on the wrapping `<div>` — swallows the trailing
+synthetic `click` that still follows the mouseup, since that click would otherwise reach React Flow's
+pane-deselection handling and immediately undo the selection just set. (A `text` note created via
+`onPaneClick` doesn't need any of this — its selection is set inside that same click handler to begin
+with, which already runs after React Flow's own deselection pass.)
 
 ### Screen-space vs flow-space measurement
 
