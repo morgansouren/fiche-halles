@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -207,35 +207,13 @@ function FlowCanvasInner() {
     [screenToFlowPosition, setNodes, onToggleGroup, catalog],
   );
 
-  // Voir plus bas (onCanvasMouseUp) : mémorise l'id du rectangle qu'on
-  // vient de finir de tracer, pour que onPaneClick (déclenché juste après
-  // par React Flow, une fois sa propre désélection de pane appliquée) le
-  // sélectionne pour de bon.
-  const lastDrawnRectIdRef = useRef<string | null>(null);
-
   // Outil "Texte" : un clic sur le canevas (pane) pose une note vide, déjà
   // sélectionnée et en édition (voir TextNode.tsx, qui entre en édition
   // dès que son texte est vide) ; l'outil se désactive juste après, pour
   // qu'un simple clic ne pose pas une note à chaque fois qu'on clique
   // ensuite sur le canevas.
-  //
-  // Sert aussi à finaliser la sélection d'un rectangle tout juste tracé
-  // (voir onCanvasMouseUp) : un simple mousedown+mouseup sur le même
-  // point déclenche toujours un "click" ensuite, que React Flow utilise
-  // pour désélectionner tout ce qui est sélectionné sur le pane — si on
-  // sélectionnait le rectangle dès le mouseup, ce clic la déferait
-  // aussitôt. En la posant ici, dans le même callback que React Flow
-  // appelle *après* sa propre désélection, la sélection survit — exactement
-  // le mécanisme qui permet déjà à une note de texte de rester
-  // sélectionnée après sa création juste au-dessus.
   const onPaneClick = useCallback(
     (event: React.MouseEvent) => {
-      if (lastDrawnRectIdRef.current) {
-        const id = lastDrawnRectIdRef.current;
-        lastDrawnRectIdRef.current = null;
-        setNodes((current) => current.map((node) => (node.id === id ? { ...node, selected: true } : node)));
-        return;
-      }
       if (activeTool !== "text") return;
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       const id = nextNodeId("text");
@@ -308,12 +286,47 @@ function FlowCanvasInner() {
     [screenToFlowPosition, setNodes],
   );
 
-  const onCanvasMouseUp = useCallback(() => {
-    const drawing = drawingRectRef.current;
-    if (!drawing) return;
-    drawingRectRef.current = null;
-    lastDrawnRectIdRef.current = drawing.id;
-    setActiveTool("pan");
+  // Un simple mousedown+mouseup (sans déplacement notable) déclenche
+  // toujours un "click" natif juste après — React Flow s'en sert pour
+  // désélectionner tout ce qui est sélectionné sur le pane. Sélectionner
+  // le rectangle ici, dans onMouseUp, se ferait donc aussitôt défaire par
+  // ce clic qui suit. On mémorise juste qu'un clic est à ignorer, et
+  // onCanvasClickCapture (capture = avant que quoi que ce soit d'autre,
+  // React Flow y compris, ne le voie) l'arrête net avec stopPropagation.
+  const suppressNextClickRef = useRef(false);
+
+  // Pas de onMouseUp={...} en prop React ici : React Flow arrête lui-même
+  // la propagation du mouseup qui termine un geste sur le pane (pour
+  // qu'il ne soit pas aussi lu comme un simple clic ailleurs) — ce
+  // mouseup n'atteint donc jamais un écouteur posé plus haut dans l'arbre
+  // via la délégation React habituelle, capture ou bulle. Un écouteur natif
+  // sur window, en phase de CAPTURE, s'exécute avant que quoi que ce soit
+  // (React Flow y compris) ne puisse l'arrêter — capture va toujours de la
+  // racine vers la cible, rien de plus profond ne peut intercepter avant.
+  useEffect(() => {
+    function handleWindowMouseUp(event: MouseEvent) {
+      const drawing = drawingRectRef.current;
+      if (!drawing) return;
+      // stopPropagation ici, pas seulement sur le clic qui suit : si le
+      // tracé se termine pile sur un appareil existant, React Flow
+      // sélectionne CET appareil dès ce même mouseup (le même réflexe
+      // "gérer sa propre sélection dès le relâchement, pas au clic
+      // suivant" que celui qu'on vient d'adopter nous-mêmes) — écraserait
+      // sinon la sélection du rectangle qu'on pose juste en dessous.
+      event.stopPropagation();
+      drawingRectRef.current = null;
+      suppressNextClickRef.current = true;
+      setNodes((current) => current.map((node) => (node.id === drawing.id ? { ...node, selected: true } : node)));
+      setActiveTool("pan");
+    }
+    window.addEventListener("mouseup", handleWindowMouseUp, true);
+    return () => window.removeEventListener("mouseup", handleWindowMouseUp, true);
+  }, [setNodes]);
+
+  const onCanvasClickCapture = useCallback((event: React.MouseEvent) => {
+    if (!suppressNextClickRef.current) return;
+    suppressNextClickRef.current = false;
+    event.stopPropagation();
   }, []);
 
   const onConnect = useCallback(
@@ -331,7 +344,7 @@ function FlowCanvasInner() {
       onDrop={onDrop}
       onMouseDown={onCanvasMouseDown}
       onMouseMove={onCanvasMouseMove}
-      onMouseUp={onCanvasMouseUp}
+      onClickCapture={onCanvasClickCapture}
     >
       <ReactFlow
         nodes={displayNodes}
