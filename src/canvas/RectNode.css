@@ -22,3 +22,43 @@
 .rect-node:hover {
   box-shadow: 0 0 3px #fff, 0 0 8px #fff;
 }
+
+/* Barre d'outils flottante (React Flow NodeToolbar — rendue en portail,
+   pas un enfant réel de .rect-node malgré l'imbrication JSX), même
+   habillage que .canvas-toolbar en haut du canevas pour rester cohérent. */
+.rect-node-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-panel-bg);
+  border: 1px solid var(--surface-panel-border);
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+
+.rect-node-toolbar-select,
+.rect-node-toolbar-button {
+  font-family: var(--font-technical);
+  font-size: 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  background: transparent;
+  color-scheme: dark;
+}
+
+.rect-node-toolbar-select {
+  cursor: default;
+}
+
+.rect-node-toolbar-button:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: var(--surface-panel-border);
+}
+
+.rect-node-toolbar-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

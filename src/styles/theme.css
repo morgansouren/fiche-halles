@@ -1,16 +1,17 @@
 /*
   fiche-halles — thème "Blueprint"
   ================================
-  Architecture en 3 couches, pour que la future variante "print" (claire,
-  imprimable) n'ait besoin de retoucher QUE la couche 2 (sémantique) :
+  Architecture en 3 couches, pour que la variante "print" (claire,
+  imprimable — tout en bas de ce fichier) n'ait besoin de retoucher QUE
+  la couche 2 (sémantique) :
 
   1. PRIMITIVES     — valeurs brutes du thème Blueprint (couleurs, tailles).
-                       Un futur thème "print" aura son propre bloc de
-                       primitives, jamais celui-ci.
+                       Le thème "print" a son propre jeu de valeurs, jamais
+                       celui-ci.
   2. SÉMANTIQUE      — ce que chaque token *signifie* dans le domaine
                        (couleur d'un type de signal, fond du canevas...).
                        C'est la seule couche que les composants (cartes,
-                       légende, ports, câbles) doivent lire. Un thème
+                       légende, ports, câbles) doivent lire. Le thème
                        "print" redéfinit ces mêmes noms avec d'autres
                        valeurs — le reste du code ne change pas.
   3. PONT REACT FLOW — recopie les tokens sémantiques dans les variables
@@ -134,6 +135,13 @@
   --signal-snake-b:   var(--bp-signal-snake-b);
   --signal-snake:     repeating-linear-gradient(45deg, var(--signal-snake-a) 0 3px, var(--signal-snake-b) 3px 6px);
 
+  /* Fond de câble par défaut (aucun protocole résolu — ne devrait
+     normalement jamais s'afficher, mais React Flow s'en sert comme repli
+     pour le pont ci-dessous) : un token dédié plutôt qu'une référence
+     directe à --bp-line-600 dans le pont, pour que le thème "print" (plus
+     bas) puisse le redéfinir sans toucher à une primitive du thème écran. */
+  --edge-default-stroke: var(--bp-line-600);
+
   --edge-width:       var(--bp-edge-width);
   --edge-width-hover: 8px;
   --port-marker-size: 8px; /* carré de couleur devant le nom du port */
@@ -191,7 +199,7 @@
   --xy-node-color-default:              var(--text-primary);
   --xy-node-boxshadow-selected-default: 0 0 0 1.5px var(--accent);
 
-  --xy-edge-stroke-default:             var(--bp-line-600);
+  --xy-edge-stroke-default:             var(--edge-default-stroke);
   --xy-edge-stroke-width-default:       var(--edge-width);
   --xy-edge-stroke-selected-default:    var(--accent);
   --xy-connectionline-stroke-default:   var(--accent);
@@ -278,15 +286,53 @@
   le même token --signal-* pour un protocole donné : c'est ce qui permet
   d'identifier un port au coup d'œil sans lire l'étiquette.
 
-  Emplacement prévu pour la variante "print" (à venir) :
-
-  [data-theme="print"] {
-    --canvas-bg: #ffffff;
-    --surface-panel-bg: #ffffff;
-    --surface-panel-border: #1a1a1a;
-    --text-primary: #111111;
-    ...
-    -- seuls les tokens de la couche 2 sont redéfinis ici ;
-    -- aucune carte, câble ou légende n'a besoin d'être retouché.
-  }
 */
+
+/* ---------- THÈME "PRINT" ----------
+   Utilisé pour l'export PDF / impression (voir canvas/exportPrint.ts) :
+   posé temporairement (data-theme="print" sur <html>) le temps de la
+   capture, puis retiré. Seuls les tokens de la couche 2 sont redéfinis
+   ici — aucune carte, câble ou légende n'a besoin d'être retouché.
+
+   L'essentiel du changement : le fond du canevas passe du bleu marine
+   plein à du blanc — imprimer une pleine page de fond sombre engloutirait
+   les cartouches d'encre pour rien. Les couleurs de signal (câbles,
+   pastilles de port) sont resserties (moins claires, un peu plus
+   saturées) : les tons pastel du thème écran, pensés pour ressortir sur
+   fond sombre, se délavent presque au blanc sur une page blanche. Les
+   couleurs de carte par famille d'appareil (device-*-bg) ne changent
+   volontairement pas : ce sont de petites surfaces, pas toute la page,
+   et déjà pensées pour un texte lisible sur elles-mêmes. */
+[data-theme="print"] {
+  --canvas-bg:        #ffffff;
+  --canvas-grid-line: #e0e0e0;
+
+  --surface-panel-bg:      #ffffff;
+  --surface-panel-border:  #888888;
+  --surface-header-border: #888888;
+  --surface-row-divider:   #cccccc;
+
+  --text-primary:   #111111;
+  --text-secondary: #333333;
+  --text-tertiary:  #555555;
+
+  --edge-default-stroke: #888888;
+
+  --signal-aes50:     oklch(55% 0.13 195);
+  --signal-dante:     oklch(55% 0.13 255);
+  --signal-ethernet:  oklch(55% 0.13 305);
+  --signal-midi:      oklch(55% 0.13 345);
+  --signal-analog:    oklch(55% 0.15 50);
+  --signal-wordclock: oklch(55% 0.13 110);
+  --signal-other:     oklch(45% 0.02 240);
+
+  --signal-speakon-a: #050505;
+  --signal-speakon-b: oklch(50% 0.19 25);
+  --signal-speakon:   repeating-linear-gradient(45deg, var(--signal-speakon-a) 0 3px, var(--signal-speakon-b) 3px 6px);
+  --signal-snake-a:   oklch(50% 0.17 145);
+  --signal-snake-b:   oklch(60% 0.17 95);
+  --signal-snake:     repeating-linear-gradient(45deg, var(--signal-snake-a) 0 3px, var(--signal-snake-b) 3px 6px);
+
+  --accent:  oklch(55% 0.19 100);
+  --invalid: oklch(50% 0.19 25);
+}
