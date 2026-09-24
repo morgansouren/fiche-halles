@@ -93,6 +93,11 @@
   --bp-switch-group-mgmt:  oklch(65% 0.01 250); /* gris, VLAN management */
   --bp-switch-group-link:  oklch(20% 0 0);      /* noir, liaisons inter-switch */
 
+  /* contour du rectangle de mise en page/export — token dédié plutôt que
+     de réutiliser --bp-text-100 ou --bp-accent : ce n'est ni du texte, ni
+     une couleur d'interaction, juste le repère visuel d'un cadre. */
+  --bp-rect-outline: #ffffff;
+
   --bp-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
   --bp-grid-size: 32px;
   --bp-radius: 0px;          /* esprit calque de plan, pas de coins arrondis */
@@ -114,6 +119,8 @@
   --text-secondary: var(--bp-text-300);
   --text-tertiary:  var(--bp-text-500);
   --font-technical: var(--bp-font-mono);
+
+  --rect-outline: var(--bp-rect-outline);
 
   /* protocole → couleur (câbles, pastilles de port, légende) */
   --signal-aes50:     var(--bp-signal-aes50);
@@ -317,6 +324,7 @@
   --text-tertiary:  #555555;
 
   --edge-default-stroke: #888888;
+  --rect-outline:         #111111;
 
   --signal-aes50:     oklch(55% 0.13 195);
   --signal-dante:     oklch(55% 0.13 255);
