@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NodeResizer, NodeToolbar, Position, type Node, type NodeProps } from "@xyflow/react";
+import { NodeResizer, NodeToolbar, Position, useStore, useViewport, type Node, type NodeProps } from "@xyflow/react";
 import { downloadZoneAsPdf, printZone, type ExportBounds, type PageSize } from "./exportPrint";
 import "./RectNode.css";
 
@@ -8,6 +8,11 @@ export type RectNodeType = Node<Record<string, never>, "rect">;
 // Taille plancher à la création/au redimensionnement — un simple repère
 // pour ne jamais finir avec un rectangle invisible (largeur/hauteur nulles).
 export const RECT_MIN_SIZE = 20;
+
+// Hauteur de la barre (boutons + select) + son décalage par défaut par
+// rapport au nœud (offset NodeToolbar = 10) — sert à savoir s'il reste assez
+// de place en dessous du rectangle avant de la faire passer au-dessus.
+const TOOLBAR_SPACE_PX = 60;
 
 // Rectangle de mise en page : créé par l'outil "Rectangle" de la barre
 // d'outils (glisser sur le canevas pour le tracer, voir FlowCanvas.tsx),
@@ -30,6 +35,20 @@ export function RectNode({ id, selected, positionAbsoluteX, positionAbsoluteY, w
     height: height ?? RECT_MIN_SIZE,
   };
 
+  // Position.Bottom évite la collision de z-index avec la barre d'outils
+  // permanente (voir plus bas), mais un rectangle dont le bas arrive près
+  // du bord bas de l'écran pousserait alors sa propre barre hors de la
+  // fenêtre visible — présente dans le DOM, mais physiquement invisible
+  // sans qu'aucun scroll n'existe pour la révéler (canevas plein écran,
+  // voir "Full-bleed layout"). On calcule donc en coordonnées écran (le
+  // node est en coordonnées canevas) s'il reste la place en dessous ;
+  // sinon la barre passe au-dessus, où il y a alors forcément de la place
+  // puisque le rectangle n'est justement pas près du haut.
+  const paneHeight = useStore((store) => store.height);
+  const { y: viewportY, zoom } = useViewport();
+  const screenBottom = viewportY + (bounds.y + bounds.height) * zoom;
+  const toolbarPosition = screenBottom + TOOLBAR_SPACE_PX > paneHeight ? Position.Top : Position.Bottom;
+
   async function runExport(action: (bounds: ExportBounds, pageSize: PageSize, excludeNodeId?: string) => Promise<void>) {
     if (busy) return;
     setBusy(true);
@@ -45,7 +64,7 @@ export function RectNode({ id, selected, positionAbsoluteX, positionAbsoluteY, w
 
   return (
     <div className="rect-node">
-      {/* Position.Bottom (pas Top) + z-index explicite : le NodeToolbar de
+      {/* Bottom par défaut (pas Top) + z-index explicite : le NodeToolbar de
           React Flow est porté dans .react-flow__renderer, dont le z-index
           (4, fixé par la librairie) est structurellement inférieur à celui
           du <Panel> qui héberge la barre d'outils permanente en haut du
@@ -54,13 +73,14 @@ export function RectNode({ id, selected, positionAbsoluteX, positionAbsoluteY, w
           l'empilement de son parent. Un rectangle tracé près du haut de
           l'écran plaçait donc sa barre Imprimer/PDF *sous* la barre
           permanente : présente dans le DOM (cliquable en apparence), mais
-          le clic atterrissait en réalité sur l'autre barre par-dessus. En
-          bas du rectangle plutôt qu'au-dessus, la collision ne se produit
-          plus que dans le cas bien plus rare d'un rectangle minuscule tout
-          en haut de l'écran. */}
+          le clic atterrissait en réalité sur l'autre barre par-dessus.
+          toolbarPosition ci-dessus repasse à Top quand Bottom pousserait la
+          barre sous le bord bas de l'écran (l'autre collision possible,
+          bien plus fréquente en usage réel : cadrer un module qui va
+          jusqu'en bas de l'écran). */}
       <NodeToolbar
         isVisible={!!selected}
-        position={Position.Bottom}
+        position={toolbarPosition}
         className="rect-node-toolbar nodrag nopan"
         style={{ zIndex: 1000 }}
       >
