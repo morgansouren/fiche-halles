@@ -169,9 +169,19 @@ outrank an ancestor stacking context's own rank relative to its siblings. A rect
 positioned above the rect (`Position.Top`) could end up visually present but unclickable near the top
 of the screen — a click there actually lands on the permanent toolbar underneath (confirmed via
 `document.elementFromPoint`, and by walking the ancestor chain with `getComputedStyle` to compare
-z-indexes). Fixed by moving the toolbar to `Position.Bottom` (avoids the collision in the common case)
-plus keeping an inline `zIndex: 1000` as a secondary safety net for same-level overlaps elsewhere
-(e.g. against a device card).
+z-indexes). An inline `zIndex: 1000` stays in place as a secondary safety net for same-level overlaps
+elsewhere (e.g. against a device card), but the actual fix is dynamic, not a fixed side: `RectNode`
+computes, in **screen space** (`useViewport()`'s `y`/`zoom` combined with `useStore((s) => s.height)`
+for the renderer's own pixel height — the node's own position/size are flow-space, see "Screen-space
+vs flow-space measurement" below), whether there's room below the rectangle for the toolbar; if not,
+it renders at `Position.Top` instead of `Position.Bottom`, and vice versa. A fixed `Position.Bottom`
+alone traded the top-collision bug for a more common one: a rectangle whose bottom edge lands near the
+bottom of the screen (framing a module that fills the visible canvas — an everyday case, not an edge
+case) pushed the toolbar past the viewport's bottom edge — present in the DOM and "visible" by CSS,
+but physically off-screen with no scroll to reveal it (full-bleed canvas, see "Full-bleed layout").
+Since the flip only triggers when there's *no* room on one side, and a rectangle near the bottom of
+the screen is by definition not also near the top, the two failure modes don't fight each other in
+the common case.
 
 ### The recurring CSS/React gotcha
 
