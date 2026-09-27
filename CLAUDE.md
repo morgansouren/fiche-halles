@@ -278,6 +278,27 @@ devices by a "stable name"). `DeviceCategory` (`domain/equipment.ts`) was widene
 to known-literals-plus-`(string & {})` specifically so users can type an arbitrary new category name
 from the form while existing code (autocomplete on the known ones) still works.
 
+### Discipline tabs in the palette (`domain/equipment.ts`'s `Discipline`)
+
+`Palette.tsx` filters by **discipline** (Son/Vidéo/Lumière/Réseau — a tab bar) *before* grouping by
+`DeviceCategory` (Consoles/Switches/...) — the existing category grouping is unchanged, just now
+scoped to whichever discipline tab is active. `Discipline` is a closed union (`"son" | "video" |
+"lumiere" | "reseau"`, `domain/equipment.ts`), deliberately **not** widened the way `DeviceCategory`
+is: it's the venue's four fixed technical disciplines, not something a user invents per-device from
+the creation form. Every `DeviceModel` (built-in and custom) requires one — the built-in catalog's
+switches (`gigacore-luminex`, `netgear`) are `"reseau"`, everything else so far is `"son"` (no video/
+lighting equipment in the catalog yet).
+
+The creation form (`CreateDeviceForm.tsx`) never asks for a discipline — it isn't a form field at all,
+by design. A device's discipline is fixed to whichever tab was active when "+ Nouvel appareil" was
+clicked (`Palette.tsx` passes its own `activeDiscipline` state down as a plain, non-editable prop);
+editing an existing device passes `editingModel.discipline` instead of the currently-active tab, so
+that editing a device from another tab (not something the UI currently allows reaching, but kept
+correct regardless) could never silently reassign it. This is also why `existingCategories` (the
+category dropdown inside the form) is computed from the *already-discipline-filtered* device list in
+`Palette.tsx`, not the full catalog — a category typed while on the Lumière tab only ever autocompletes
+against other Lumière categories, never a same-named category that happens to exist under Son.
+
 ### Custom node types get no free CSS
 
 React Flow's built-in selection/hover rules only target its own built-in node-type classes
