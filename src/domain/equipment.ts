@@ -48,9 +48,16 @@ export type DeviceCategory =
   | "rf"
   | (string & {});
 
+// Discipline technique — l'onglet de la palette sous lequel l'appareil
+// apparaît (palette/Palette.tsx). Contrairement à DeviceCategory, ensemble
+// fermé : ce sont les quatre pôles techniques de la salle, pas quelque
+// chose qu'un utilisateur invente à la volée depuis le formulaire.
+export type Discipline = "son" | "video" | "lumiere" | "reseau";
+
 export interface DeviceModel {
   id: string;
   name: string;
+  discipline: Discipline;
   category: DeviceCategory;
   ports: Port[];
   // Affichage en une seule rangée horizontale, tous les ports toujours

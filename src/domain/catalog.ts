@@ -8,12 +8,14 @@ export const catalog: DeviceModel[] = [
   {
     id: "speaker-active",
     name: "Enceinte active",
+    discipline: "son",
     category: "speaker",
     ports: [{ id: "analog-in", label: "Analog In", protocol: "Analog", direction: "in" }],
   },
   {
     id: "midas-hd96",
     name: "Midas HD96",
+    discipline: "son",
     category: "console",
     ports: [
     
@@ -63,6 +65,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "midas-pro1",
     name: "Midas Pro1",
+    discipline: "son",
     category: "console",
     ports: [
       // In
@@ -144,6 +147,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "midas-m32r",
     name: "Midas M32R",
+    discipline: "son",
     category: "console",
     ports: [
 
@@ -203,6 +207,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "midas-m32c",
     name: "Midas M32C",
+    discipline: "son",
     category: "console",
     ports: [
       // In
@@ -221,6 +226,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "dl151",
     name: "DL151",
+    discipline: "son",
     category: "converter",
     ports: [
       // In
@@ -257,6 +263,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "dl153",
     name: "DL153",
+    discipline: "son",
     category: "converter",
     ports: [
       // In
@@ -294,6 +301,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "dl154",
     name: "DL154",
+    discipline: "son",
     category: "converter",
     ports: [
       // In
@@ -331,6 +339,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "dl251",
     name: "DL251",
+    discipline: "son",
     category: "converter",
     ports: [
       // In
@@ -412,6 +421,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "dl16",
     name: "DL16",
+    discipline: "son",
     category: "converter",
     ports: [
       // In
@@ -453,6 +463,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "dn9680",
     name: "DN9680",
+    discipline: "son",
     category: "converter",
     ports: [
       // Inout
@@ -471,6 +482,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "dn9650",
     name: "DN9650",
+    discipline: "son",
     category: "converter",
     ports: [
       // In
@@ -490,6 +502,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "nxamp4x4",
     name: "Nxamp4x4",
+    discipline: "son",
     category: "amplifier",
     ports: [
       // In
@@ -507,6 +520,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "nxamp4x1",
     name: "Nxamp4x1",
+    discipline: "son",
     category: "amplifier",
     ports: [
       // In
@@ -524,6 +538,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "gigacore-luminex",
     name: "Gigacore Luminex",
+    discipline: "reseau",
     category: "switch",
     layout: "horizontal",
     ports: [
@@ -549,6 +564,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "netgear",
     name: "Netgear",
+    discipline: "reseau",
     category: "switch",
     layout: "horizontal",
     ports: [
@@ -565,6 +581,7 @@ export const catalog: DeviceModel[] = [
   {
     id: "4x-recepteurs-ew500",
     name: "4x Récepteurs Ew500",
+    discipline: "son",
     category: "rf",
     layout: "horizontal",
     ports: [

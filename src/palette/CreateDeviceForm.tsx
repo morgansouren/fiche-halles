@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCatalog } from "../domain/CatalogContext";
-import type { DeviceModel, Port, PortDirection, Protocol } from "../domain/equipment";
+import type { DeviceModel, Discipline, Port, PortDirection, Protocol } from "../domain/equipment";
 import { slugify, uniqueId } from "../domain/customDevices";
 import "./CreateDeviceForm.css";
 
@@ -37,6 +37,11 @@ function newDraftPort(): DraftPort {
 
 export interface CreateDeviceFormProps {
   existingCategories: string[];
+  // La discipline (onglet de la palette) n'est jamais un champ du
+  // formulaire : elle vient de l'onglet actif au moment de l'ouverture
+  // (voir Palette.tsx) et reste fixe pour la durée de l'édition — un
+  // appareil ne change pas d'onglet depuis ce formulaire.
+  discipline: Discipline;
   // Présent = on édite cet appareil existant (id conservé tel quel, pas
   // régénéré même si le nom change) ; absent = création d'un nouvel
   // appareil (voir Palette.tsx, qui choisit lequel selon le bouton cliqué).
@@ -61,7 +66,7 @@ function draftPortsFrom(model: DeviceModel | undefined): DraftPort[] {
 // disposition, et une liste de ports définis un par un. Enregistrer
 // construit un DeviceModel classique et le confie à onSave, qui se charge
 // de la persistance (voir CatalogContext.tsx).
-export function CreateDeviceForm({ existingCategories, initialModel, onCancel, onSave }: CreateDeviceFormProps) {
+export function CreateDeviceForm({ existingCategories, discipline, initialModel, onCancel, onSave }: CreateDeviceFormProps) {
   const { catalog } = useCatalog();
   const isEditing = !!initialModel;
   const [name, setName] = useState(initialModel?.name ?? "");
@@ -120,6 +125,7 @@ export function CreateDeviceForm({ existingCategories, initialModel, onCancel, o
     const model: DeviceModel = {
       id,
       name: trimmedName,
+      discipline,
       category: finalCategory,
       ports: finalPorts,
       ...(layoutHorizontal ? { layout: "horizontal" as const } : {}),

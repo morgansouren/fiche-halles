@@ -12,6 +12,41 @@
   box-sizing: border-box;
 }
 
+/* Onglets de discipline (Son/Vidéo/Lumière/Réseau) : filtrent la palette
+   avant même les catégories habituelles (Consoles, Switches...), qui ne
+   s'affichent qu'à l'intérieur de l'onglet actif — voir Palette.tsx. */
+.palette-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.palette-tab {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  font-family: var(--font-technical);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.palette-tab:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.palette-tab-active {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: #fff;
+  color: #fff;
+}
+
 .palette-category h3 {
   margin: 16px 0 8px;
   font-family: var(--font-technical);
