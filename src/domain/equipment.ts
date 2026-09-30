@@ -15,7 +15,12 @@ export type Protocol =
   | "VideoSync"
   | "Aux"
   | "Adat"
-  | "Speakon";
+  | "Speakon"
+  | "USB"
+  | "Thunderbolt"
+  | "HDMI"
+  | "MiniDisplayPort"
+  | "SDI";
 
 export type PortDirection = "in" | "out" | "inout";
 
@@ -31,6 +36,12 @@ export interface Port {
   // ports sous un même intitulé/couleur sur la carte. Purement descriptif
   // — n'intervient dans aucune règle de connexion.
   group?: string;
+  // Toujours visible sur la carte : le port n'entre dans aucun groupe
+  // masquable (voir computePortGroups, canvas/portVisibility.ts). Un
+  // groupe qui ne contiendrait que des ports ainsi marqués disparaît, son
+  // bouton avec — ex. le Minijack du Macbook, seule sortie analogique,
+  // qu'un bouton "Aout 1" ne ferait que cacher sans rien gagner.
+  alwaysVisible?: boolean;
 }
 
 // Catégories connues (autocomplétion) + n'importe quelle chaîne — un
@@ -46,6 +57,10 @@ export type DeviceCategory =
   | "amplifier"
   | "switch"
   | "rf"
+  | "video-source"
+  | "video-converter"
+  | "video-controller"
+  | "projector"
   | (string & {});
 
 // Discipline technique — l'onglet de la palette sous lequel l'appareil
@@ -66,4 +81,12 @@ export interface DeviceModel {
   // réseau, racks HF...). Par défaut (absent) : les deux colonnes
   // habituelles, avec groupes masquables.
   layout?: "horizontal";
+  // Groupes de ports masqués à la pose de l'appareil sur le canevas, par
+  // identifiant de groupe ("o", "m", "axin", "axout", "ain-1", "aout-2"...
+  // — voir computePortGroups, canvas/portVisibility.ts). Présent, il
+  // remplace entièrement la règle par défaut pour cet appareil : les
+  // groupes listés partent masqués, tous les autres visibles. Ex. un
+  // Macbook : ["o"] garde USB/Thunderbolt derrière le bouton "O" et
+  // laisse HDMI/Minijack visibles. Absent : règle par défaut.
+  initiallyHiddenGroups?: string[];
 }

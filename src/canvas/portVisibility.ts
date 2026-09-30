@@ -2,8 +2,8 @@ import type { DeviceModel, Port } from "../domain/equipment";
 
 // Groupes de ports que l'on peut masquer/afficher depuis l'en-tête d'un
 // appareil, pour réduire la hauteur d'une carte quand on n'a pas besoin
-// de voir tous ses ports. Dante, AES50, Snake, Ethernet et Speakon restent
-// toujours visibles (ils n'apparaissent dans aucun groupe) — aucun bouton
+// de voir tous ses ports. Dante, AES50, Snake, Ethernet, Speakon, HDMI et
+// MiniDisplayPort restent toujours visibles (ils n'apparaissent dans aucun groupe) — aucun bouton
 // ne les masque.
 //
 // Analog In et Analog Out sont en plus subdivisés par paquets de 8 (un
@@ -15,8 +15,21 @@ const CHUNK_SIZE = 8;
 
 // Regroupés sous "O" même si Word Clock a sa propre couleur dans le
 // thème : la classification par bouton n'est pas obligée de suivre
-// exactement la classification par couleur.
-const OTHER_GROUP_PROTOCOLS = new Set(["AES3", "MADI", "Ultranet", "Adat", "VideoSync", "WordClock"]);
+// exactement la classification par couleur. USB et Thunderbolt y sont
+// aussi : ports de données/périphériques, secondaires sur la plupart des
+// appareils (ex. Macbook) — un appareil où ils sont au contraire
+// principaux (ex. adaptateur USB to ethernet) les laisse simplement
+// visibles à la pose.
+const OTHER_GROUP_PROTOCOLS = new Set([
+  "AES3",
+  "MADI",
+  "Ultranet",
+  "Adat",
+  "VideoSync",
+  "WordClock",
+  "USB",
+  "Thunderbolt",
+]);
 
 export interface PortGroupDef {
   id: string;
@@ -40,8 +53,11 @@ function rangeLabel(prefix: string, chunkIndex: number, chunkLength: number): st
 // masquables (et les ports que contrôle chacun). Recalculé à partir du
 // catalogue (pur), aucun état ici — l'état "masqué/visible" vit dans les
 // données du nœud (voir FlowCanvas.tsx).
-export function computePortGroups(ports: Port[]): PortGroupDef[] {
+export function computePortGroups(allPorts: Port[]): PortGroupDef[] {
   const groups: PortGroupDef[] = [];
+  // Ports marqués alwaysVisible : hors de tout groupe, donc jamais masqués
+  // et sans bouton propre (un groupe vide n'est jamais créé ci-dessous).
+  const ports = allPorts.filter((p) => !p.alwaysVisible);
 
   const analogIn = ports.filter((p) => p.protocol === "Analog" && p.direction === "in");
   const analogOut = ports.filter((p) => p.protocol === "Analog" && p.direction === "out");
@@ -72,10 +88,24 @@ export type HiddenGroups = Record<string, boolean>;
 // comme le ferait un canal 1-24/48 de console, et c'est justement ce
 // qu'on veut voir en premier sur un ampli. Les boutons restent cliquables
 // pour les masquer si besoin, ce n'est qu'un état de départ différent.
+//
+// Même raisonnement, étendu à toute la discipline vidéo : ces appareils
+// ont peu de ports (ex. une seule sortie Minijack sur un Macbook), les
+// cacher derrière un bouton ne ferait rien gagner — tous leurs groupes
+// partent visibles.
+//
+// Un appareil peut aussi déclarer sa propre liste dans le catalogue
+// (DeviceModel.initiallyHiddenGroups), qui prime alors sur les deux
+// règles ci-dessus — pour les cas où seul l'usage réel de l'appareil dit
+// quels ports montrer d'abord (ex. Macbook : HDMI/Minijack oui, USB/
+// Thunderbolt derrière "O"), ce qu'aucune règle générale ne devine.
 export function defaultHiddenGroups(model: DeviceModel): HiddenGroups {
+  const explicit = model.initiallyHiddenGroups;
   return Object.fromEntries(
     computePortGroups(model.ports).map((group) => {
-      const visibleByDefault = model.category === "amplifier" && group.id.startsWith("ain");
+      if (explicit) return [group.id, explicit.includes(group.id)];
+      const visibleByDefault =
+        model.discipline === "video" || (model.category === "amplifier" && group.id.startsWith("ain"));
       return [group.id, !visibleByDefault];
     }),
   );

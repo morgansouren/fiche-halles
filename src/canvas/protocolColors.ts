@@ -19,6 +19,11 @@ const PROTOCOL_COLOR_KEY: Record<Protocol, string> = {
   Ultranet: "other",
   Adat: "other",
   VideoSync: "other",
+  USB: "other",
+  Thunderbolt: "other",
+  HDMI: "other",
+  MiniDisplayPort: "other",
+  SDI: "other",
 };
 
 // Protocoles rendus à rayures (deux couleurs) plutôt qu'en couleur unie —

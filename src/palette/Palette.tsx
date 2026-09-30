@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCatalog } from "../domain/CatalogContext";
 import type { DeviceModel, Discipline } from "../domain/equipment";
+import { categoryLabel, disciplineCategories } from "./categories";
 import { CreateDeviceForm } from "./CreateDeviceForm";
 import "./Palette.css";
 
@@ -18,23 +19,6 @@ const DISCIPLINES: { id: Discipline; label: string }[] = [
   { id: "reseau", label: "Réseau" },
 ];
 
-// Juste des intitulés plus lisibles pour les catégories du catalogue
-// intégré (catalog.ts) — une catégorie créée depuis le formulaire n'y
-// figure jamais, son propre texte (tel que tapé) sert alors directement
-// de libellé d'en-tête.
-const categoryLabels: Record<string, string> = {
-  console: "Consoles",
-  converter: "Boîtiers / convertisseurs",
-  speaker: "Enceintes",
-  amplifier: "Amplificateurs",
-  switch: "Switches",
-  rf: "Récepteurs / Émetteurs HF",
-};
-
-function categoryLabel(category: string): string {
-  return categoryLabels[category] ?? category;
-}
-
 function handleDragStart(event: React.DragEvent, model: DeviceModel) {
   event.dataTransfer.setData(DEVICE_MODEL_MIME_TYPE, model.id);
   event.dataTransfer.effectAllowed = "move";
@@ -46,7 +30,11 @@ export function Palette() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingModel, setEditingModel] = useState<DeviceModel | null>(null);
   const disciplineDevices = catalog.filter((model) => model.discipline === activeDiscipline);
-  const categories = Array.from(new Set(disciplineDevices.map((model) => model.category)));
+  // Catégories prévues d'abord (même vides), puis celles des appareils
+  // existants — le Set dédoublonne en gardant le premier ordre rencontré.
+  const categories = Array.from(
+    new Set([...disciplineCategories[activeDiscipline], ...disciplineDevices.map((model) => model.category)]),
+  );
 
   return (
     <aside className="palette">
@@ -63,12 +51,13 @@ export function Palette() {
         ))}
       </div>
 
-      {categories.map((category) => (
-        <div key={category} className="palette-category">
-          <h3>{categoryLabel(category)}</h3>
-          {disciplineDevices
-            .filter((model) => model.category === category)
-            .map((model) => {
+      {categories.map((category) => {
+        const categoryDevices = disciplineDevices.filter((model) => model.category === category);
+        return (
+          <div key={category} className="palette-category">
+            <h3>{categoryLabel(category)}</h3>
+            {categoryDevices.length === 0 && <p className="palette-category-empty">Aucun appareil</p>}
+            {categoryDevices.map((model) => {
               const isCustom = customDeviceIds.has(model.id);
               return (
                 <div
@@ -114,8 +103,9 @@ export function Palette() {
                 </div>
               );
             })}
-        </div>
-      ))}
+          </div>
+        );
+      })}
 
       <button type="button" className="palette-create-button" onClick={() => setIsCreating(true)}>
         + Nouvel appareil

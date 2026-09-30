@@ -4,7 +4,7 @@ import type { DeviceModel } from "../domain/equipment";
 // Couleur de carte par famille d'appareil : un repère visuel pour
 // distinguer d'un coup d'œil console / DL / DN / ampli sur un montage
 // chargé. Classification par catégorie (console) ou par préfixe du nom
-// (DL/DN/Nxamp) — un concept purement d'affichage, qui n'a donc pas sa
+// (DL/DN/Nxamp/Macbook) — un concept purement d'affichage, qui n'a donc pas sa
 // place dans le catalogue (domain/catalog.ts).
 //
 // CSSProperties n'autorise pas les propriétés personnalisées par défaut ;
@@ -13,18 +13,19 @@ import type { DeviceModel } from "../domain/equipment";
 // famille précise autrement qu'en CSS pur).
 export type DeviceCardStyle = CSSProperties & { "--device-right-text"?: string };
 
-type DeviceFamily = "console" | "dl" | "dn" | "nxamp" | "other";
+type DeviceFamily = "console" | "dl" | "dn" | "nxamp" | "mac" | "other";
 
 function familyOf(model: DeviceModel): DeviceFamily {
   if (model.category === "console") return "console";
   if (model.name.startsWith("DL")) return "dl";
   if (model.name.startsWith("DN")) return "dn";
   if (model.name.startsWith("Nxamp")) return "nxamp";
+  if (model.name.startsWith("Macbook")) return "mac";
   return "other";
 }
 
 // Nxamp est la seule famille à fond uniformément foncé (violet foncé) :
-// elle seule reçoit le texte clair, les quatre autres gardent le même
+// elle seule reçoit le texte clair, les autres gardent le même
 // texte sombre.
 //
 // DL est un cas à part : son dégradé va du violet clair jusqu'à un bleu
@@ -53,6 +54,7 @@ const FAMILY_CONFIG: Record<DeviceFamily, FamilyConfig> = {
   },
   dn:      { style: { background: "var(--device-dn-bg)", color: "var(--device-text-dark)" } },
   nxamp:   { style: { background: "var(--device-nxamp-bg)", color: "var(--device-text-light)" } },
+  mac:     { style: { background: "var(--device-mac-bg)", color: "var(--device-text-dark)" } },
   other:   { style: { background: "var(--device-other-bg)", color: "var(--device-text-dark)" } },
 };
 

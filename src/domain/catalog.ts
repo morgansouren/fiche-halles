@@ -592,4 +592,59 @@ export const catalog: DeviceModel[] = [
       { id: "analog-out-4", label: "Analog Out 4", protocol: "Analog", direction: "out", group: "Analog Out" },
     ],
   },
+  {
+    id: "macbook-pro-2015",
+    name: "Macbook pro 2015",
+    discipline: "video",
+    category: "video-source",
+    initiallyHiddenGroups: ["o"],
+    ports: [
+      // Inout
+      { id: "usb-1", label: "USB 1", protocol: "USB", direction: "inout" },
+      { id: "usb-2", label: "USB 2", protocol: "USB", direction: "inout" },
+      { id: "thunderbolt-1", label: "TB/MD 1", protocol: "Thunderbolt", direction: "inout" },
+      { id: "thunderbolt-2", label: "TB/MD 2", protocol: "Thunderbolt", direction: "inout" },
+      // Out
+      { id: "hdmi-out", label: "HDMI", protocol: "HDMI", direction: "out" },
+      { id: "minijack-out", label: "Minijack", protocol: "Analog", direction: "out", alwaysVisible: true },
+    ],
+  },
+  {
+    id: "blackmagic-hdmi-to-sdi",
+    name: "Blackmagic HDMI to SDI",
+    discipline: "video",
+    category: "video-converter",
+    ports: [
+      // In
+      { id: "hdmi-in", label: "HDMI", protocol: "HDMI", direction: "in" },
+      // Out
+      { id: "sdi-out-1", label: "SDI 1", protocol: "SDI", direction: "out" },
+      { id: "sdi-out-2", label: "SDI 2", protocol: "SDI", direction: "out" },
+    ],
+  },
+  {
+    id: "blackmagic-sdi-to-hdmi",
+    name: "Blackmagic SDI to HDMI",
+    discipline: "video",
+    category: "video-converter",
+    ports: [
+      // In
+      { id: "sdi-in", label: "SDI", protocol: "SDI", direction: "in" },
+      // Out
+      { id: "hdmi-out", label: "HDMI", protocol: "HDMI", direction: "out" },
+      { id: "sdi-loop", label: "SDI loop", protocol: "SDI", direction: "out" },
+    ],
+  },
+  {
+    id: "usb-to-ethernet",
+    name: "USB to ethernet",
+    discipline: "video",
+    category: "video-converter",
+    ports: [
+      // In
+      { id: "usb-in", label: "USB", protocol: "USB", direction: "in" },
+      // Out
+      { id: "ethernet-out", label: "Ethernet", protocol: "Ethernet", direction: "out" },
+    ],
+  },
 ];

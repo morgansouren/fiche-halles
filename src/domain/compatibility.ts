@@ -3,7 +3,24 @@ import type { Port, PortDirection, Protocol } from "./equipment";
 // Paires de protocoles différents mais physiquement raccordables entre
 // eux (ex. Aux et Analog sont tous deux de l'audio analogique standard,
 // juste routés différemment sur la console).
-const compatibleProtocolPairs: [Protocol, Protocol][] = [["Aux", "Analog"]];
+//
+// Thunderbolt/MiniDisplayPort/HDMI : le port Thunderbolt 2 (seule
+// génération présente au catalogue, ex. Macbook pro 2015, ports "TB/MD")
+// est physiquement un Mini DisplayPort qui sort du DisplayPort
+// "dual-mode" (DP++) — il accepte directement un câble Mini DP, et un
+// adaptateur passif Mini DP -> HDMI suffit pour de l'HDMI. Même
+// adaptateur passif pour un port Mini DisplayPort seul (sans
+// Thunderbolt), d'où la paire MiniDisplayPort/HDMI — les paires ne sont
+// pas transitives, elle doit être déclarée explicitement.
+// Volontairement PAS de paire Thunderbolt/USB : aucun adaptateur passif
+// n'existe entre Thunderbolt 2 et USB (il faut un dock actif) ; seul
+// Thunderbolt 3/4 (connecteur USB-C) est compatible USB.
+const compatibleProtocolPairs: [Protocol, Protocol][] = [
+  ["Aux", "Analog"],
+  ["Thunderbolt", "MiniDisplayPort"],
+  ["Thunderbolt", "HDMI"],
+  ["MiniDisplayPort", "HDMI"],
+];
 
 function protocolsMatch(a: Protocol, b: Protocol): boolean {
   if (a === b) return true;

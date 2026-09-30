@@ -56,6 +56,15 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* Catégorie prévue d'avance (voir categories.ts) mais encore sans aucun
+   appareil — discret, juste pour que l'en-tête ne semble pas orphelin. */
+.palette-category-empty {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .palette-category:first-child h3 {
   margin-top: 0;
 }

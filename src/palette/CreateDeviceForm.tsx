@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCatalog } from "../domain/CatalogContext";
 import type { DeviceModel, Discipline, Port, PortDirection, Protocol } from "../domain/equipment";
 import { slugify, uniqueId } from "../domain/customDevices";
+import { categoryLabel } from "./categories";
 import "./CreateDeviceForm.css";
 
 const PROTOCOLS: Protocol[] = [
@@ -19,6 +20,11 @@ const PROTOCOLS: Protocol[] = [
   "VideoSync",
   "Adat",
   "Speakon",
+  "USB",
+  "Thunderbolt",
+  "HDMI",
+  "MiniDisplayPort",
+  "SDI",
 ];
 
 const NEW_CATEGORY_VALUE = "__new__";
@@ -148,7 +154,7 @@ export function CreateDeviceForm({ existingCategories, discipline, initialModel,
           <select value={category} onChange={(event) => setCategory(event.target.value)}>
             {existingCategories.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {categoryLabel(c)}
               </option>
             ))}
             <option value={NEW_CATEGORY_VALUE}>+ Nouvelle catégorie…</option>
