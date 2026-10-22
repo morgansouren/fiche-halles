@@ -1,5 +1,5 @@
-import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
-import type { CSSProperties } from "react";
+import { Handle, Position, useUpdateNodeInternals, type Node, type NodeProps } from "@xyflow/react";
+import { useEffect, type CSSProperties } from "react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground, protocolStrokeColors } from "./protocolColors";
 import { deviceCardStyle, deviceTitleHasBadge } from "./deviceColors";
@@ -18,6 +18,13 @@ export type DeviceNodeType = Node<
     model: DeviceModel;
     hiddenGroups: HiddenGroups;
     onToggleGroup: (group: string) => void;
+    // Colonnes inversées (entrées à droite, sorties/inout à gauche) — propre
+    // à CETTE carte posée sur le canevas, pas au modèle du catalogue : deux
+    // appareils reliés face à face (ex. deux consoles en AES50) peuvent
+    // ainsi tourner leurs ports l'un vers l'autre, et le câble aller tout
+    // droit au lieu de contourner une des deux boîtes. Absent = non inversé.
+    flipped?: boolean;
+    onToggleFlip: () => void;
     // Calculés par FlowCanvas.tsx à partir de `edges` à chaque rendu (pas
     // stockés dans l'état persistant du nœud) — voir l'outil "Masquer les
     // ports inutilisés" de la barre d'outils. Absents (undefined) tant que
@@ -28,9 +35,12 @@ export type DeviceNodeType = Node<
   "device"
 >;
 
-// Les ports "in" apparaissent à gauche, les ports "out" et "inout" à droite.
-function positionFor(port: Port): Position {
-  return port.direction === "in" ? Position.Left : Position.Right;
+// Les ports "in" apparaissent à gauche, les ports "out" et "inout" à droite
+// — ou l'inverse si la carte est inversée (bouton ⇄ du titre).
+function positionFor(port: Port, flipped: boolean): Position {
+  const inSide = flipped ? Position.Right : Position.Left;
+  const outSide = flipped ? Position.Left : Position.Right;
+  return port.direction === "in" ? inSide : outSide;
 }
 
 function handleTypeFor(port: Port): "source" | "target" {
@@ -103,13 +113,25 @@ function groupTogglesByFamily(groups: PortGroupDef[]): PortGroupDef[][] {
   return Array.from(families.values());
 }
 
-export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
-  const { model, hiddenGroups, onToggleGroup, hideUnusedPorts, usedPortIds } = data;
+export function DeviceNode({ id, data }: NodeProps<DeviceNodeType>) {
+  const { model, hiddenGroups, onToggleGroup, hideUnusedPorts, usedPortIds, onToggleFlip } = data;
+  const flipped = data.flipped ?? false;
   // Une rangée horizontale, tous les ports toujours visibles, aucun
   // bouton de groupe — pour les appareils dont les ports se présentent
   // ainsi physiquement (switches réseau, racks HF...), pas seulement les
   // switches : voir DeviceModel.layout dans domain/equipment.ts.
   const isHorizontal = model.layout === "horizontal";
+
+  // Inverser les colonnes déplace chaque port d'un bord à l'autre SANS
+  // changer la taille de la carte (mêmes colonnes, juste échangées) — or
+  // React Flow ne remesure les ports (handleBounds, que lit le routage des
+  // câbles) que quand la taille change. Sans ce rappel explicite, les
+  // câbles continueraient de partir de l'ancien côté. L'effet tourne après
+  // que le DOM inversé est en place, donc la mesure est la bonne.
+  const updateNodeInternals = useUpdateNodeInternals();
+  useEffect(() => {
+    updateNodeInternals(id);
+  }, [flipped, id, updateNodeInternals]);
 
   // "Masquer les ports inutilisés" est un filtre en plus de celui des
   // groupes, pas un remplacement : un port peut très bien appartenir à un
@@ -133,14 +155,26 @@ export function DeviceNode({ data }: NodeProps<DeviceNodeType>) {
     const groupVisible = groupId === undefined || !hiddenGroups[groupId];
     return groupVisible && isUsed(port);
   });
-  const leftPorts = visiblePorts.filter((port) => positionFor(port) === Position.Left);
-  const rightPorts = visiblePorts.filter((port) => positionFor(port) === Position.Right);
+  const leftPorts = visiblePorts.filter((port) => positionFor(port, flipped) === Position.Left);
+  const rightPorts = visiblePorts.filter((port) => positionFor(port, flipped) === Position.Right);
   const toggleFamilies = groupTogglesByFamily(groups);
 
   return (
     <div className="device-node" style={deviceCardStyle(model)}>
       <div className="device-node-title">
         {deviceTitleHasBadge(model) ? <span className="device-node-title-badge">{model.name}</span> : model.name}
+        {/* Pas de bouton sur une carte horizontale : ses ports sont tous en
+            bas, il n'y a pas de gauche/droite à échanger. */}
+        {!isHorizontal && (
+          <button
+            type="button"
+            className={["device-node-flip", flipped && "device-node-toggle-active"].filter(Boolean).join(" ")}
+            onClick={onToggleFlip}
+            title="Inverser les ports gauche/droite"
+          >
+            ⇄
+          </button>
+        )}
       </div>
       {!isHorizontal && !hideUnusedPorts && groups.length > 0 && (
         <div className="device-node-toggles">

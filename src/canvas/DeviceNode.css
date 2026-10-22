@@ -20,8 +20,12 @@
   min-width: 140px;
 }
 
+/* position: relative pour y accrocher le bouton ⇄ (absolu, à droite) ;
+   le rembourrage horizontal, symétrique, lui réserve sa place sans
+   décentrer le nom de l'appareil. */
 .device-node-title {
-  padding: 6px 8px;
+  position: relative;
+  padding: 6px 24px;
   font-size: 15px;
   font-weight: 700;
   text-align: center;
@@ -43,6 +47,29 @@
   color: var(--bp-navy-950);
   padding: 1px 8px;
   border-radius: 6px;
+}
+
+/* Même aspect que les boutons de groupe (.device-node-toggle) ; inversé,
+   il prend aussi leur état actif (jaune) — on voit d'un coup d'œil quelles
+   cartes sont retournées. Collé au bord droit du titre, il prend la couleur
+   de la colonne de droite (--device-right-text, posée uniquement pour DL,
+   dont le dégradé est bleu foncé de ce côté — même logique que
+   .device-node-toggle-out) ; ailleurs la variable est absente et il hérite
+   la couleur normale. */
+.device-node-flip {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--device-right-text, inherit);
+  cursor: pointer;
 }
 
 .device-node-toggles {

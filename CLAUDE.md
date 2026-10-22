@@ -127,6 +127,21 @@ when only its position shifts via CSS — a pure CSS position tweak on already-m
 leave routing using stale coordinates until something forces a remeasure (move the node, or reload
 the page).
 
+Per-card port flip (the ⇄ button in a device card's title, `data.flipped` on the node, toggled by
+`onToggleFlip` in `FlowCanvas.tsx`) hits exactly that: swapping the left/right columns moves every
+handle to the other edge **without changing the card's size**, so React Flow never remeasures on its
+own. Two pieces are needed, and both are load-bearing:
+- `DeviceNode.tsx` calls `useUpdateNodeInternals()(id)` in a `useEffect` keyed on `flipped` (runs
+  after the swapped DOM commits) to force the remeasure.
+- That remeasure only updates React Flow's store (`set({})`), never our `nodes` state — React Flow
+  emits a `dimensions` change only when the size actually changed. So `routedEdges` also depends on
+  `handleBoundsKey`, a `useStore` selector that builds a string signature (side + node-relative x/y of
+  every handle). It's a string so `useStore`'s `===` check suppresses re-renders when nothing moved;
+  node-relative coordinates mean it stays stable during a plain node drag. The memo never reads it —
+  it's only a trigger, hence the lint suppression on that dependency array.
+Flip is a per-instance choice (stored in node data, not in `DeviceModel`), and horizontal-layout
+cards get no button (all their ports are on the bottom edge).
+
 ### Theming (`src/styles/theme.css`)
 
 Three-layer architecture, deliberately kept in sync by hand (no build-time indirection):

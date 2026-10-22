@@ -9,6 +9,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  useStore,
   useStoreApi,
   type Connection,
   type Edge,
@@ -70,6 +71,26 @@ function FlowCanvasInner() {
   // drag. La position/taille vient donc de `nodes`, et on va chercher
   // un instantané frais des handles (leur position à l'intérieur du
   // nœud) directement dans le store à chaque recalcul.
+  //
+  // Exception : inverser une carte (bouton ⇄) déplace ses ports sans changer
+  // sa taille ni rien dans `nodes` au moment de la remesure — React Flow
+  // remesure alors ses handles (updateNodeInternals, voir DeviceNode.tsx)
+  // mais seul son store le sait. Cette signature (côté + position de chaque
+  // handle, relative au nœud donc stable pendant un simple déplacement) ne
+  // change qu'à ce moment-là et relance le calcul. Une chaîne plutôt qu'un
+  // objet : useStore compare par ===, deux chaînes identiques ne
+  // redéclenchent pas de rendu.
+  const handleBoundsKey = useStore((state) => {
+    let key = "";
+    for (const [nodeId, node] of state.nodeLookup) {
+      const bounds = node.internals.handleBounds;
+      for (const h of [...(bounds?.source ?? []), ...(bounds?.target ?? [])]) {
+        key += `${nodeId}/${h.id}:${h.position}@${h.x},${h.y};`;
+      }
+    }
+    return key;
+  });
+
   const routedEdges = useMemo(() => {
     const nodeLookup = storeApi.getState().nodeLookup;
     // Seuls les appareils sont des obstacles pour le routage : une note de
@@ -106,7 +127,10 @@ function FlowCanvasInner() {
       const strokeColors = sourcePort ? protocolStrokeColors(sourcePort.protocol) : undefined;
       return { ...edge, data: { ...edge.data, path: routes.get(edge.id), strokeColors } };
     });
-  }, [nodes, edges, storeApi]);
+    // handleBoundsKey n'est pas lu dans le calcul : c'est seulement un
+    // déclencheur (voir plus haut), d'où la désactivation de la règle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes, edges, storeApi, handleBoundsKey]);
 
   // Injecte hideUnusedPorts + l'ensemble des ports connectés dans les
   // données de chaque appareil, juste pour l'affichage — jamais stocké
@@ -141,6 +165,18 @@ function FlowCanvasInner() {
           node.id === nodeId && node.type === "device"
             ? { ...node, data: { ...node.data, hiddenGroups: { ...node.data.hiddenGroups, [group]: !node.data.hiddenGroups[group] } } }
             : node,
+        ),
+      );
+    },
+    [setNodes],
+  );
+
+  // Même principe pour l'inversion gauche/droite des ports d'un appareil.
+  const onToggleFlip = useCallback(
+    (nodeId: string) => {
+      setNodes((current) =>
+        current.map((node) =>
+          node.id === nodeId && node.type === "device" ? { ...node, data: { ...node.data, flipped: !node.data.flipped } } : node,
         ),
       );
     },
@@ -200,11 +236,16 @@ function FlowCanvasInner() {
         id,
         type: "device",
         position,
-        data: { model, hiddenGroups: defaultHiddenGroups(model), onToggleGroup: (group) => onToggleGroup(id, group) },
+        data: {
+          model,
+          hiddenGroups: defaultHiddenGroups(model),
+          onToggleGroup: (group) => onToggleGroup(id, group),
+          onToggleFlip: () => onToggleFlip(id),
+        },
       };
       setNodes((current) => current.concat(newNode));
     },
-    [screenToFlowPosition, setNodes, onToggleGroup, catalog],
+    [screenToFlowPosition, setNodes, onToggleGroup, onToggleFlip, catalog],
   );
 
   // Outil "Texte" : un clic sur le canevas (pane) pose une note vide, déjà
