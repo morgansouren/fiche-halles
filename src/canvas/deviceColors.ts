@@ -4,7 +4,7 @@ import type { DeviceModel } from "../domain/equipment";
 // Couleur de carte par famille d'appareil : un repère visuel pour
 // distinguer d'un coup d'œil console / DL / DN / ampli sur un montage
 // chargé. Classification par catégorie (console) ou par préfixe du nom
-// (DL/DN/Nxamp/Macbook) — un concept purement d'affichage, qui n'a donc pas sa
+// (DL/DN/Nxamp/Macbook/ATEM) — un concept purement d'affichage, qui n'a donc pas sa
 // place dans le catalogue (domain/catalog.ts).
 //
 // CSSProperties n'autorise pas les propriétés personnalisées par défaut ;
@@ -13,7 +13,7 @@ import type { DeviceModel } from "../domain/equipment";
 // famille précise autrement qu'en CSS pur).
 export type DeviceCardStyle = CSSProperties & { "--device-right-text"?: string };
 
-type DeviceFamily = "console" | "dl" | "dn" | "nxamp" | "mac" | "other";
+type DeviceFamily = "console" | "dl" | "dn" | "nxamp" | "mac" | "atem" | "other";
 
 function familyOf(model: DeviceModel): DeviceFamily {
   if (model.category === "console") return "console";
@@ -21,12 +21,13 @@ function familyOf(model: DeviceModel): DeviceFamily {
   if (model.name.startsWith("DN")) return "dn";
   if (model.name.startsWith("Nxamp")) return "nxamp";
   if (model.name.startsWith("Macbook")) return "mac";
+  if (model.name.startsWith("ATEM")) return "atem";
   return "other";
 }
 
-// Nxamp est la seule famille à fond uniformément foncé (violet foncé) :
-// elle seule reçoit le texte clair, les autres gardent le même
-// texte sombre.
+// Nxamp (violet foncé) et ATEM (noir anthracite, comme le boîtier) sont
+// les familles à fond uniformément foncé : elles seules reçoivent le
+// texte clair, les autres gardent le même texte sombre.
 //
 // DL est un cas à part : son dégradé va du violet clair jusqu'à un bleu
 // foncé (--bp-device-dl-b). Les ports n'ont pas de souci de lisibilité
@@ -55,6 +56,7 @@ const FAMILY_CONFIG: Record<DeviceFamily, FamilyConfig> = {
   dn:      { style: { background: "var(--device-dn-bg)", color: "var(--device-text-dark)" } },
   nxamp:   { style: { background: "var(--device-nxamp-bg)", color: "var(--device-text-light)" } },
   mac:     { style: { background: "var(--device-mac-bg)", color: "var(--device-text-dark)" } },
+  atem:    { style: { background: "var(--device-atem-bg)", color: "var(--device-text-light)" } },
   other:   { style: { background: "var(--device-other-bg)", color: "var(--device-text-dark)" } },
 };
 

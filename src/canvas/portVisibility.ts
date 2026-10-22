@@ -19,7 +19,9 @@ const CHUNK_SIZE = 8;
 // aussi : ports de données/périphériques, secondaires sur la plupart des
 // appareils (ex. Macbook) — un appareil où ils sont au contraire
 // principaux (ex. adaptateur USB to ethernet) les laisse simplement
-// visibles à la pose.
+// visibles à la pose. RGB/DVI/Serial/Remote : entrées vidéo historiques
+// et ports de contrôle d'un projecteur, rarement câblés face au HDMI/SDI/
+// Digital Link qu'on utilise en pratique.
 const OTHER_GROUP_PROTOCOLS = new Set([
   "AES3",
   "MADI",
@@ -29,6 +31,10 @@ const OTHER_GROUP_PROTOCOLS = new Set([
   "WordClock",
   "USB",
   "Thunderbolt",
+  "RGB",
+  "DVI",
+  "Serial",
+  "Remote",
 ]);
 
 export interface PortGroupDef {

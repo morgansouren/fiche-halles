@@ -15,11 +15,16 @@ import type { Port, PortDirection, Protocol } from "./equipment";
 // Volontairement PAS de paire Thunderbolt/USB : aucun adaptateur passif
 // n'existe entre Thunderbolt 2 et USB (il faut un dock actif) ; seul
 // Thunderbolt 3/4 (connecteur USB-C) est compatible USB.
+//
+// DVI/HDMI : le DVI-D porte le même signal vidéo numérique (TMDS) que
+// l'HDMI — un adaptateur passif suffit, mais l'image seulement (pas de
+// son : le DVI ne transporte pas d'audio).
 const compatibleProtocolPairs: [Protocol, Protocol][] = [
   ["Aux", "Analog"],
   ["Thunderbolt", "MiniDisplayPort"],
   ["Thunderbolt", "HDMI"],
   ["MiniDisplayPort", "HDMI"],
+  ["DVI", "HDMI"],
 ];
 
 function protocolsMatch(a: Protocol, b: Protocol): boolean {

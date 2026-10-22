@@ -73,8 +73,8 @@
      protocole et de la palette, pour les mêmes raisons. Luminosités (L)
      choisies pour rester lisibles avec un texte sombre unique sur toute
      la famille "console" (gris/bleuté -> jaune pastel restent tous les
-     deux clairs) ; Nxamp est la seule famille foncée, donc la seule à
-     recevoir le texte clair --device-text-light. */
+     deux clairs) ; Nxamp et ATEM sont les familles foncées, donc les
+     seules à recevoir le texte clair --device-text-light. */
   --bp-device-console-a: oklch(70% 0.02 250); /* gris bleuté */
   --bp-device-console-b: oklch(92% 0.07 95);  /* jaune pastel */
   --bp-device-dl:         oklch(82% 0.09 300); /* violet clair */
@@ -83,6 +83,7 @@
   --bp-device-dn-b:       oklch(74% 0.015 240); /* argenté ombré */
   --bp-device-nxamp:      oklch(34% 0.15 300); /* violet foncé */
   --bp-device-mac:        oklch(66% 0.005 260); /* gris Mac (aluminium) — plus foncé que l'argenté DN et le neutre "other" pour ne pas s'y confondre */
+  --bp-device-atem:       oklch(30% 0.005 260); /* noir anthracite du boîtier ATEM Mini */
   --bp-device-other:      oklch(88% 0.01 250); /* neutre, appareils hors des familles ci-dessus */
 
   /* couleur des ports par groupe (VLAN) sur un switch réseau — tous les
@@ -183,6 +184,7 @@
   --device-dn-bg:    linear-gradient(160deg, var(--bp-device-dn-a), var(--bp-device-dn-b));
   --device-nxamp-bg: var(--bp-device-nxamp);
   --device-mac-bg:   var(--bp-device-mac);
+  --device-atem-bg:  var(--bp-device-atem);
   --device-other-bg: var(--bp-device-other);
   --device-text-dark:  var(--bp-navy-950);
   --device-text-light: var(--bp-text-100);

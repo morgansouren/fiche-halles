@@ -25,6 +25,10 @@ const PROTOCOLS: Protocol[] = [
   "HDMI",
   "MiniDisplayPort",
   "SDI",
+  "RGB",
+  "DVI",
+  "Serial",
+  "Remote",
 ];
 
 const NEW_CATEGORY_VALUE = "__new__";

@@ -24,6 +24,10 @@ const PROTOCOL_COLOR_KEY: Record<Protocol, string> = {
   HDMI: "other",
   MiniDisplayPort: "other",
   SDI: "other",
+  RGB: "other",
+  DVI: "other",
+  Serial: "other",
+  Remote: "other",
 };
 
 // Protocoles rendus à rayures (deux couleurs) plutôt qu'en couleur unie —

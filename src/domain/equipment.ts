@@ -20,7 +20,11 @@ export type Protocol =
   | "Thunderbolt"
   | "HDMI"
   | "MiniDisplayPort"
-  | "SDI";
+  | "SDI"
+  | "RGB"
+  | "DVI"
+  | "Serial"
+  | "Remote";
 
 export type PortDirection = "in" | "out" | "inout";
 

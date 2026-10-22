@@ -18,7 +18,15 @@ React/CSS/React Flow behavior.
 
 ## Commands
 
-- `npm run dev` — start the Vite dev server.
+- `npm run dev` — start the Vite dev server. On Windows, stopping the background `npm run dev` task
+  does not kill its child `node` process — a restart then silently lands on port 5174. Free the port
+  (find the listener with `Get-NetTCPConnection -LocalPort 5173`, `Stop-Process` it) before relaunching.
+- **Write each file in a single write while the dev server runs.** Several rapid successive writes to
+  the same file (e.g. a script doing one replace-and-save per edit) can leave Vite serving an
+  *intermediate* version on Windows — it once served a `deviceColors.ts` where `familyOf` already
+  returned `"atem"` but `FAMILY_CONFIG` had no `atem` entry yet, crashing the whole React tree (white
+  page, no error boundary) on drop. `tsc` passes in that state since the disk file is correct; `touch`
+  the file to force a recompile.
 - `npm run build` — full build: `tsc -b && vite build`.
 - `npx tsc --noEmit -p tsconfig.app.json` — type-check only. **Do not run bare `npx tsc --noEmit`** —
   the root `tsconfig.json` has `"files": []` plus project references (`tsconfig.app.json` /
@@ -51,7 +59,8 @@ the exported data file for the troubleshooting skill, without being entangled in
 
 Cross-protocol compatibility lives in `compatibleProtocolPairs` (`compatibility.ts`) and is **not
 transitive** — every pair must be declared explicitly. Current pairs: Aux↔Analog, Thunderbolt↔
-MiniDisplayPort, Thunderbolt↔HDMI, MiniDisplayPort↔HDMI (passive adapters). There is deliberately no
+MiniDisplayPort, Thunderbolt↔HDMI, MiniDisplayPort↔HDMI, DVI↔HDMI (passive adapters; DVI carries
+no audio, so a DVI↔HDMI link is picture-only). There is deliberately no
 Thunderbolt↔USB pair: the catalog's Thunderbolt ports are Thunderbolt 2 (Mini DP connector), which
 has no passive USB adapter — only Thunderbolt 3/4 (USB-C) is USB-compatible, so a future TB3 device
 needs its own protocol rather than a widened rule.
@@ -74,13 +83,15 @@ The user hand-edits `src/domain/catalog.ts` directly (adding real device models,
 `canvas/portVisibility.ts` computes which ports a device shows/hides — computed fresh from a
 device's port list (not a static enum). Analog In/Out are chunked into groups of 8; other protocols
 group as a whole (Aux, MIDI, "other" catch-all) or stay always-visible (Dante/AES50/Snake/Ethernet/
-Speakon/HDMI/MiniDisplayPort/SDI are never groupable; USB/Thunderbolt fall in "other"). All groups
+Speakon/HDMI/MiniDisplayPort/SDI are never groupable; USB/Thunderbolt and the projector-style
+legacy/control protocols RGB/DVI/Serial/Remote fall in "other"). All groups
 start hidden by default (`defaultHiddenGroups`), except Analog In on an `amplifier` category device
 (visible by default — a Nxamp only has 4, hiding them gains nothing), and every group of a
 `"video"`-discipline device (same reasoning: video devices have few ports). A catalog entry can
 override all of this with `DeviceModel.initiallyHiddenGroups` (group ids like `"o"`, `"ain-1"`):
 listed groups start hidden, all others visible — e.g. the Macbook hides `"o"` (USB/Thunderbolt) so
-only HDMI/Minijack show at drop. Prefer this per-device field over widening a general rule when only
+only HDMI/Minijack show at drop, the Panasonic PT-RZ770 hides `"o"` so only SDI/HDMI/LAN-Digital Link
+show, and the ATEM Mini Pro hides `"ain-1"` (its Mic 1/2). Prefer this per-device field over widening a general rule when only
 one device's real-world usage justifies it (a general "hide USB in video" rule was tried and wrongly
 hid the only input of the USB-to-ethernet adapter). Likewise, `Port.alwaysVisible` pulls a single
 port out of every group (never hidden, no button — a group left empty disappears with its button),
@@ -139,7 +150,7 @@ source order, and this import order is what lets our tokens/rules win.
 Per-protocol and per-device-family colors live in dedicated modules
 (`canvas/protocolColors.ts`, `canvas/deviceColors.ts`) that map domain data (protocol / device
 category+name prefix) to CSS variable references — consumed by both the port circles and the cable
-rendering (protocols) or the device card background (families: console/DL/DN/Nxamp/Mac/other), so the
+rendering (protocols) or the device card background (families: console/DL/DN/Nxamp/Mac/ATEM/other), so the
 mapping is defined once. Device-family classification is presentation-only and intentionally does
 not live in `domain/catalog.ts`.
 
@@ -304,7 +315,8 @@ scoped to whichever discipline tab is active. `Discipline` is a closed union (`"
 is: it's the venue's four fixed technical disciplines, not something a user invents per-device from
 the creation form. Every `DeviceModel` (built-in and custom) requires one — the built-in catalog's
 switches (`gigacore-luminex`, `netgear`) are `"reseau"`, the Macbook pro 2015 (`video-source`) and
-the Blackmagic/USB-to-ethernet converters (`video-converter`) are `"video"`, everything else so far is
+the Blackmagic/USB-to-ethernet converters (`video-converter`), the ATEM Mini Pro (`video-controller`)
+and the Panasonic PT-RZ770 (`projector`) are `"video"`, everything else so far is
 `"son"` (no lighting equipment in the catalog yet).
 
 A tab's category list is normally *derived* from the devices present, so an empty discipline would

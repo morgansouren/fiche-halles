@@ -647,4 +647,48 @@ export const catalog: DeviceModel[] = [
       { id: "ethernet-out", label: "Ethernet", protocol: "Ethernet", direction: "out" },
     ],
   },
+  {
+    id: "panasonic-pt-rz770",
+    name: "Panasonic PT-RZ770",
+    discipline: "video",
+    category: "projector",
+    initiallyHiddenGroups: ["o"],
+    ports: [
+      // In
+      { id: "sdi-in", label: "SDI In", protocol: "SDI", direction: "in" },
+      { id: "hdmi-in", label: "HDMI In", protocol: "HDMI", direction: "in" },
+      { id: "rgb-1-in", label: "RGB 1 In", protocol: "RGB", direction: "in", media: "5× BNC" },
+      { id: "rgb-2-in", label: "RGB 2 In", protocol: "RGB", direction: "in", media: "D-sub 15" },
+      { id: "dvi-d-in", label: "DVI-D In", protocol: "DVI", direction: "in" },
+      { id: "remote-1-in", label: "Remote 1 In", protocol: "Remote", direction: "in", media: "Minijack" },
+      { id: "remote-2-in", label: "Remote 2 In", protocol: "Remote", direction: "in", media: "D-sub 9" },
+      { id: "serial-in", label: "Serial In", protocol: "Serial", direction: "in", media: "D-sub 9" },
+      // Out
+      { id: "remote-1-out", label: "Remote 1 Out", protocol: "Remote", direction: "out", media: "Minijack" },
+      { id: "serial-out", label: "Serial Out", protocol: "Serial", direction: "out", media: "D-sub 9" },
+      // Inout
+      { id: "lan-digital-link", label: "LAN / Digital Link", protocol: "Ethernet", direction: "inout", media: "RJ45 (HDBaseT)" },
+    ],
+  },
+  {
+    id: "atem-mini-pro",
+    name: "ATEM Mini Pro",
+    discipline: "video",
+    category: "video-controller",
+    initiallyHiddenGroups: ["ain-1"],
+    ports: [
+      // In
+      { id: "hdmi-in-1", label: "HDMI 1", protocol: "HDMI", direction: "in" },
+      { id: "hdmi-in-2", label: "HDMI 2", protocol: "HDMI", direction: "in" },
+      { id: "hdmi-in-3", label: "HDMI 3", protocol: "HDMI", direction: "in" },
+      { id: "hdmi-in-4", label: "HDMI 4", protocol: "HDMI", direction: "in" },
+      { id: "mic-1", label: "Mic 1", protocol: "Analog", direction: "in", media: "Minijack" },
+      { id: "mic-2", label: "Mic 2", protocol: "Analog", direction: "in", media: "Minijack" },
+      // Out
+      { id: "hdmi-out", label: "HDMI Out", protocol: "HDMI", direction: "out" },
+      { id: "usb-out", label: "USB Out", protocol: "USB", direction: "out", media: "USB-C" },
+      // Inout
+      { id: "atem-control", label: "ATEM Control", protocol: "Ethernet", direction: "inout" },
+    ],
+  },
 ];
