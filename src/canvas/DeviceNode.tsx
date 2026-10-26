@@ -2,7 +2,7 @@ import { Handle, Position, useUpdateNodeInternals, type Node, type NodeProps } f
 import { useEffect, type CSSProperties } from "react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground, protocolStrokeColors } from "./protocolColors";
-import { deviceCardStyle, deviceTitleHasBadge } from "./deviceColors";
+import { deviceCardStyle } from "./deviceColors";
 import { portGroupColor, hasKnownPortGroupColor } from "./portGroupColors";
 import { computePortGroups, type HiddenGroups, type PortGroupDef } from "./portVisibility";
 import "./DeviceNode.css";
@@ -162,7 +162,7 @@ export function DeviceNode({ id, data }: NodeProps<DeviceNodeType>) {
   return (
     <div className="device-node" style={deviceCardStyle(model)}>
       <div className="device-node-title">
-        {deviceTitleHasBadge(model) ? <span className="device-node-title-badge">{model.name}</span> : model.name}
+        <span className="device-node-title-name">{model.name}</span>
         {/* Pas de bouton sur une carte horizontale : ses ports sont tous en
             bas, il n'y a pas de gauche/droite à échanger. */}
         {!isHorizontal && (

@@ -68,23 +68,72 @@
   --bp-palette-grad-start: oklch(70% 0.13 195); /* turquoise */
   --bp-palette-grad-end:   oklch(55% 0.19 25);  /* rouge */
 
-  /* couleur de carte par famille d'appareil (repère visuel au premier
-     coup d'œil sur un montage chargé) — indépendante des couleurs de
-     protocole et de la palette, pour les mêmes raisons. Luminosités (L)
-     choisies pour rester lisibles avec un texte sombre unique sur toute
-     la famille "console" (gris/bleuté -> jaune pastel restent tous les
-     deux clairs) ; Nxamp et ATEM sont les familles foncées, donc les
-     seules à recevoir le texte clair --device-text-light. */
-  --bp-device-console-a: oklch(70% 0.02 250); /* gris bleuté */
-  --bp-device-console-b: oklch(92% 0.07 95);  /* jaune pastel */
-  --bp-device-dl:         oklch(82% 0.09 300); /* violet clair */
-  --bp-device-dl-b:       oklch(28% 0.12 260); /* bleu foncé, extrémité du dégradé DL */
-  --bp-device-dn-a:       oklch(90% 0.01 240); /* argenté clair */
-  --bp-device-dn-b:       oklch(74% 0.015 240); /* argenté ombré */
-  --bp-device-nxamp:      oklch(34% 0.15 300); /* violet foncé */
-  --bp-device-mac:        oklch(66% 0.005 260); /* gris Mac (aluminium) — plus foncé que l'argenté DN et le neutre "other" pour ne pas s'y confondre */
-  --bp-device-atem:       oklch(30% 0.005 260); /* noir anthracite du boîtier ATEM Mini */
-  --bp-device-other:      oklch(88% 0.01 250); /* neutre, appareils hors des familles ci-dessus */
+  /* Apparence de carte par appareil (voir canvas/deviceColors.ts) :
+     couleurs relevées sur photos fabricant (châssis/façade), indépendantes
+     des couleurs de protocole et de la palette, pour les mêmes raisons.
+     Chaque apparence a son propre texte, teinté vers son fond, et chaque
+     paire fond/texte (titre compris) atteint au moins 4,5:1 aux deux
+     extrémités du dégradé (calculé, pas estimé). Écarts assumés par
+     rapport au réel :
+     - les appareils noirs (M32R, DL16, Nxamp, ATEM, RZ770...) sont
+       éclaircis en anthracite : à leur vraie luminosité (~25 %) ils se
+       confondraient avec le fond marine du canevas (~23 %) ;
+     - les tons moyens (HD96, Pro1, Netgear) sont légèrement assombris,
+       en gardant leur teinte : à leur luminosité réelle aucun texte
+       n'atteint 4,5:1. */
+  --bp-device-hd96-a:        oklch(53% 0.080 265); /* bleu métallisé Midas */
+  --bp-device-hd96-b:        oklch(46% 0.075 267);
+  --bp-device-hd96-text:     oklch(97% 0.010 265);
+  --bp-device-hd96-accent:   oklch(58% 0.090 55);  /* accoudoir bois — plus clair que le vrai brun (~20 %), invisible sinon sur le bleu */
+  --bp-device-pro1-a:        oklch(52% 0.045 240); /* bleu acier/pétrole */
+  --bp-device-pro1-b:        oklch(46% 0.042 242);
+  --bp-device-pro1-text:     oklch(98% 0.010 240);
+  --bp-device-midas-black-a: oklch(33% 0.003 260); /* noir mat M32R/DL16, éclairci */
+  --bp-device-midas-black-b: oklch(28% 0.003 260);
+  --bp-device-midas-black-text: oklch(93% 0.005 260);
+  --bp-device-m32c-edge:     oklch(38% 0.004 255); /* rappel des oreilles de rack argentées */
+  --bp-device-m32c-face:     oklch(29% 0.003 255);
+  --bp-device-m32c-text:     oklch(93% 0.005 255);
+  --bp-device-dl-a:          oklch(45% 0.165 266); /* bleu roi Midas */
+  --bp-device-dl-b:          oklch(39% 0.155 267);
+  --bp-device-dl-text:       oklch(97% 0.010 266);
+  --bp-device-dl-title:      oklch(88% 0.150 95);  /* jaune du logo Midas */
+  --bp-device-dn-a:          oklch(88% 0.004 260); /* aluminium brossé Klark Teknik */
+  --bp-device-dn-b:          oklch(82% 0.006 260);
+  --bp-device-dn-text:       oklch(22% 0.005 260);
+  --bp-device-nxamp-a:       oklch(34% 0.010 285); /* anthracite froid NEXO */
+  --bp-device-nxamp-b:       oklch(29% 0.010 285);
+  --bp-device-nxamp-text:    oklch(93% 0.008 285);
+  --bp-device-gigacore-a:    oklch(47% 0.100 268); /* façade bleu roi Luminex */
+  --bp-device-gigacore-b:    oklch(41% 0.095 268);
+  --bp-device-gigacore-text: oklch(97% 0.010 268);
+  --bp-device-netgear-a:     oklch(52% 0.062 261); /* bleu ardoise ProSAFE */
+  --bp-device-netgear-b:     oklch(45% 0.066 264);
+  --bp-device-netgear-text:  oklch(97% 0.008 261);
+  --bp-device-ew500-a:       oklch(89% 0.012 75);  /* argent champagne Sennheiser */
+  --bp-device-ew500-b:       oklch(84% 0.014 70);
+  --bp-device-ew500-text:    oklch(24% 0.010 70);
+  --bp-device-mac-a:         oklch(94% 0.006 255); /* aluminium argent */
+  --bp-device-mac-b:         oklch(88% 0.008 255);
+  --bp-device-mac-text:      oklch(22% 0.006 255);
+  --bp-device-blackmagic-a:  oklch(66% 0.003 260); /* aluminium anodisé gris */
+  --bp-device-blackmagic-b:  oklch(62% 0.003 260);
+  --bp-device-blackmagic-text: oklch(12% 0.003 260);
+  --bp-device-blackmagic-accent: oklch(72% 0.150 65); /* orange Blackmagic */
+  --bp-device-usb-adapter-a: oklch(36% 0.004 260); /* plastique noir/gris générique */
+  --bp-device-usb-adapter-b: oklch(31% 0.004 260);
+  --bp-device-usb-adapter-text: oklch(93% 0.005 260);
+  --bp-device-rz770-a:       oklch(32% 0.004 250); /* version noire (PT-RZ770B) */
+  --bp-device-rz770-b:       oklch(27% 0.004 250);
+  --bp-device-rz770-text:    oklch(93% 0.005 250);
+  --bp-device-atem-a:        oklch(32% 0.009 292); /* noir ATEM, légèrement froid */
+  --bp-device-atem-b:        oklch(28% 0.008 292);
+  --bp-device-atem-text:     oklch(93% 0.008 292);
+  --bp-device-atem-accent:   oklch(62% 0.210 27);  /* rouge du bouton "1"/ON AIR */
+  --bp-device-speaker-a:     oklch(37% 0.006 60);  /* caisson noir, anthracite chaud */
+  --bp-device-speaker-b:     oklch(31% 0.005 60);
+  --bp-device-speaker-text:  oklch(93% 0.006 60);
+  --bp-device-other:         oklch(88% 0.01 250);  /* neutre, appareils hors table */
 
   /* couleur des ports par groupe (VLAN) sur un switch réseau — tous les
      ports d'un switch partagent le même protocole (Ethernet), c'est donc
@@ -167,25 +216,50 @@
   --palette-bg: linear-gradient(180deg, var(--bp-palette-grad-start), var(--bp-palette-grad-end));
   --palette-width: 240px;
 
-  /* Le jaune pastel n'apparaît que dans le dernier tiers (au lieu d'un
-     dégradé linéaire 50/50) : le gris-bleuté domine la carte, le jaune
-     reste un accent bas de carte plutôt qu'une moitié franche. */
-  --device-console-bg: linear-gradient(180deg, var(--bp-device-console-a) 0%, var(--bp-device-console-a) 65%, var(--bp-device-console-b) 100%);
-  /* de ce violet vers un bleu foncé (90deg = gauche -> droite). Le bleu
-     atteint sa teinte finale dès 60% (pas à 100%) et reste plein jusqu'au
-     bord droit : le dégradé est décalé vers la gauche exprès, pour que le
-     fond soit nettement foncé sur la majorité de la largeur (colonne de
-     droite comprise) plutôt qu'une zone intermédiaire floue. Le texte de
-     la colonne de droite passe d'ailleurs en clair pour cette raison
-     (--device-right-text, deviceColors.ts) — le titre, lui, traverse les
-     deux zones et reçoit à la place un badge blanc opaque derrière lui
-     (voir deviceTitleHasBadge()/.device-node-title-badge). */
-  --device-dl-bg:    linear-gradient(90deg, var(--bp-device-dl) 0%, var(--bp-device-dl-b) 60%, var(--bp-device-dl-b) 100%);
-  --device-dn-bg:    linear-gradient(160deg, var(--bp-device-dn-a), var(--bp-device-dn-b));
-  --device-nxamp-bg: var(--bp-device-nxamp);
-  --device-mac-bg:   var(--bp-device-mac);
-  --device-atem-bg:  var(--bp-device-atem);
-  --device-other-bg: var(--bp-device-other);
+  /* Apparence de carte par appareil (deviceColors.ts) : fond + texte, plus
+     titre/accent pour celles qui en ont un. Dégradés légers (quelques %
+     de luminosité), orientés comme la matière : vertical pour une
+     façade/un dessus, horizontal (90deg) pour l'aluminium brossé (DN,
+     EW 500) et pour la M32C, dont les bords plus clairs rappellent ses
+     oreilles de rack argentées. */
+  --device-hd96-bg:      linear-gradient(160deg, var(--bp-device-hd96-a), var(--bp-device-hd96-b));
+  --device-hd96-text:    var(--bp-device-hd96-text);
+  --device-hd96-accent:  var(--bp-device-hd96-accent);
+  --device-pro1-bg:      linear-gradient(160deg, var(--bp-device-pro1-a), var(--bp-device-pro1-b));
+  --device-pro1-text:    var(--bp-device-pro1-text);
+  --device-midas-black-bg:   linear-gradient(180deg, var(--bp-device-midas-black-a), var(--bp-device-midas-black-b));
+  --device-midas-black-text: var(--bp-device-midas-black-text);
+  --device-m32c-bg:      linear-gradient(90deg, var(--bp-device-m32c-edge) 0%, var(--bp-device-m32c-face) 12%, var(--bp-device-m32c-face) 88%, var(--bp-device-m32c-edge) 100%);
+  --device-m32c-text:    var(--bp-device-m32c-text);
+  --device-dl-bg:        linear-gradient(180deg, var(--bp-device-dl-a), var(--bp-device-dl-b));
+  --device-dl-text:      var(--bp-device-dl-text);
+  --device-dl-title:     var(--bp-device-dl-title);
+  --device-dn-bg:        linear-gradient(90deg, var(--bp-device-dn-a), var(--bp-device-dn-b));
+  --device-dn-text:      var(--bp-device-dn-text);
+  --device-nxamp-bg:     linear-gradient(180deg, var(--bp-device-nxamp-a), var(--bp-device-nxamp-b));
+  --device-nxamp-text:   var(--bp-device-nxamp-text);
+  --device-gigacore-bg:  linear-gradient(180deg, var(--bp-device-gigacore-a), var(--bp-device-gigacore-b));
+  --device-gigacore-text: var(--bp-device-gigacore-text);
+  --device-netgear-bg:   linear-gradient(160deg, var(--bp-device-netgear-a), var(--bp-device-netgear-b));
+  --device-netgear-text: var(--bp-device-netgear-text);
+  --device-ew500-bg:     linear-gradient(90deg, var(--bp-device-ew500-a), var(--bp-device-ew500-b));
+  --device-ew500-text:   var(--bp-device-ew500-text);
+  --device-mac-bg:       linear-gradient(180deg, var(--bp-device-mac-a), var(--bp-device-mac-b));
+  --device-mac-text:     var(--bp-device-mac-text);
+  --device-blackmagic-bg:     linear-gradient(160deg, var(--bp-device-blackmagic-a), var(--bp-device-blackmagic-b));
+  --device-blackmagic-text:   var(--bp-device-blackmagic-text);
+  --device-blackmagic-accent: var(--bp-device-blackmagic-accent);
+  --device-usb-adapter-bg:   linear-gradient(180deg, var(--bp-device-usb-adapter-a), var(--bp-device-usb-adapter-b));
+  --device-usb-adapter-text: var(--bp-device-usb-adapter-text);
+  --device-rz770-bg:     linear-gradient(180deg, var(--bp-device-rz770-a), var(--bp-device-rz770-b));
+  --device-rz770-text:   var(--bp-device-rz770-text);
+  --device-atem-bg:      linear-gradient(180deg, var(--bp-device-atem-a), var(--bp-device-atem-b));
+  --device-atem-text:    var(--bp-device-atem-text);
+  --device-atem-accent:  var(--bp-device-atem-accent);
+  --device-speaker-bg:   linear-gradient(180deg, var(--bp-device-speaker-a), var(--bp-device-speaker-b));
+  --device-speaker-text: var(--bp-device-speaker-text);
+  --device-other-bg:     var(--bp-device-other);
+  --device-other-text:   var(--device-text-dark);
   --device-text-dark:  var(--bp-navy-950);
   --device-text-light: var(--bp-text-100);
 

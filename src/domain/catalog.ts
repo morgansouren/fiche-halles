@@ -611,7 +611,7 @@ export const catalog: DeviceModel[] = [
   },
   {
     id: "blackmagic-hdmi-to-sdi",
-    name: "Blackmagic HDMI to SDI",
+    name: "BM HDMI to SDI",
     discipline: "video",
     category: "video-converter",
     ports: [
@@ -624,7 +624,7 @@ export const catalog: DeviceModel[] = [
   },
   {
     id: "blackmagic-sdi-to-hdmi",
-    name: "Blackmagic SDI to HDMI",
+    name: "BM SDI to HDMI",
     discipline: "video",
     category: "video-converter",
     ports: [

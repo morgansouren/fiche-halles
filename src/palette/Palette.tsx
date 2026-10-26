@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { deviceCardStyle } from "../canvas/deviceColors";
 import { useCatalog } from "../domain/CatalogContext";
 import type { DeviceModel, Discipline } from "../domain/equipment";
 import { categoryLabel, disciplineCategories } from "./categories";
@@ -59,10 +60,14 @@ export function Palette() {
             {categoryDevices.length === 0 && <p className="palette-category-empty">Aucun appareil</p>}
             {categoryDevices.map((model) => {
               const isCustom = customDeviceIds.has(model.id);
+              // L'entrée prend la même apparence que la carte posée sur le
+              // canevas (canvas/deviceColors.ts) : on reconnaît l'appareil
+              // avant même de le glisser.
               return (
                 <div
                   key={model.id}
                   className="palette-item"
+                  style={deviceCardStyle(model)}
                   draggable
                   onDragStart={(event) => handleDragStart(event, model)}
                 >

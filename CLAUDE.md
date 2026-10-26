@@ -23,7 +23,7 @@ React/CSS/React Flow behavior.
   (find the listener with `Get-NetTCPConnection -LocalPort 5173`, `Stop-Process` it) before relaunching.
 - **Write each file in a single write while the dev server runs.** Several rapid successive writes to
   the same file (e.g. a script doing one replace-and-save per edit) can leave Vite serving an
-  *intermediate* version on Windows — it once served a `deviceColors.ts` where `familyOf` already
+  *intermediate* version on Windows — it once served a `deviceColors.ts` where the name→family lookup already
   returned `"atem"` but `FAMILY_CONFIG` had no `atem` entry yet, crashing the whole React tree (white
   page, no error boundary) on drop. `tsc` passes in that state since the disk file is correct; `touch`
   the file to force a recompile.
@@ -162,17 +162,40 @@ the *screen* theme, so it's now routed through a new semantic `--edge-default-st
 `@xyflow/react/dist/style.css` (imported inside `FlowCanvas.tsx`) — CSS specificity ties break by
 source order, and this import order is what lets our tokens/rules win.
 
-Per-protocol and per-device-family colors live in dedicated modules
-(`canvas/protocolColors.ts`, `canvas/deviceColors.ts`) that map domain data (protocol / device
-category+name prefix) to CSS variable references — consumed by both the port circles and the cable
-rendering (protocols) or the device card background (families: console/DL/DN/Nxamp/Mac/ATEM/other), so the
-mapping is defined once. Device-family classification is presentation-only and intentionally does
-not live in `domain/catalog.ts`.
+Per-protocol and per-device colors live in dedicated modules
+(`canvas/protocolColors.ts`, `canvas/deviceColors.ts`) that map domain data (protocol / device model
+id) to CSS variable references — consumed by both the port circles and the cable rendering
+(protocols) or the device card (looks), so the mapping is defined once. Device-look classification
+is presentation-only and intentionally does not live in `domain/catalog.ts`.
+
+**Device looks evoke each device's real physical appearance** (chassis/front-panel colors sampled
+from manufacturer photos). `deviceColors.ts` maps model **id** → look (`LOOK_BY_MODEL_ID` — by id,
+not name prefix, because appearance doesn't follow names: the DL16 is matte black like the M32R, not
+royal blue like the DL151/153/154/251; DN9680/9650 are Klark Teknik silver, not Midas blue).
+Physically identical models share a look; an unmapped id (custom devices) falls back to `"other"`.
+Each look has its own tokens `--device-<look>-bg` / `-text`, plus optional `-title` (brand marking
+color on the name, e.g. Midas logo yellow on DLs) and `-accent` (a 5px bottom stripe drawn as an
+inset `box-shadow`, e.g. HD96 wood armrest, Blackmagic orange, ATEM red; deliberately none on Nxamp;
+never on a horizontal-layout card, whose port dots sit on that same bottom edge). `deviceCardStyle`
+sets `--device-accent-size` alongside the color, and `.device-node-body` reserves that same height as
+`padding-bottom` — without it the stripe paints over the last port row. The palette entries
+(`Palette.tsx`) reuse `deviceCardStyle` too, so each device looks the same in the palette as on the
+canvas; since their background is inline, `.palette-item:hover` can't change it (inline beats
+`:hover`) and uses border + `filter: brightness()` instead. A look flagged `light` sets `--device-port-ring: currentColor` so port dots
+(~L 78%) get a solid dark ring instead of the 55% one — otherwise they vanish on silver/white cards.
+Text colors are **per look** (a near-white or near-black tinted toward the background), not one
+shared light/dark pair: that's what lets a mid-tone like Blackmagic's aluminium (~L 63%) stay at its
+real lightness with near-black text, where neither shared text color reached 4.5:1. Every bg/text
+(and bg/title) pair was computed at ≥ 4.5:1 at both gradient ends. Deliberate departures from
+reality: black chassis are lifted to anthracite (~L 28–37%) so they don't merge with the navy canvas
+(~L 23%); a few mid-tones (HD96, Pro1, Netgear) are slightly darkened, keeping their hue. To add a
+device: map its id to an existing look, or add a look (tokens in `theme.css` layers 1 and 2 + a
+`LOOK_CONFIG` entry) and check contrast numerically, not by eye.
 
 **Convention: give every new decorative color its own dedicated primitive + semantic token pair**
 (e.g. `--bp-palette-grad-*`, `--bp-device-*`) instead of reusing an existing semantically-loaded
 token that happens to look right (e.g. don't point a new decoration at `--bp-signal-aes50` or
-`--bp-invalid`). This has been done deliberately for the palette gradient, the device-family colors,
+`--bp-invalid`). This has been done deliberately for the palette gradient, the device looks,
 and the invalid-connection red — a future change to a protocol/alert color must never accidentally
 shift an unrelated decoration.
 
@@ -230,7 +253,7 @@ the common case.
 
 **An inline `style` prop always beats a CSS class rule**, including `:hover` and `.selected`. The
 codebase's convention: only properties that vary *per instance* (a port's protocol color, a cable's
-stroke color, a device card's family color) go in inline `style` (typed via a local
+stroke color, a device card's look (background, text, accent)) go in inline `style` (typed via a local
 `CSSProperties & { "--custom-var"?: string }` extension when a CSS custom property needs to be set
 from JS); everything constant goes in a CSS class so that `:hover`/`.selected`/state-class rules can
 still override it. Where a dynamic inline color genuinely must be overridden by a temporary
@@ -296,6 +319,17 @@ synthetic `click` that still follows the mouseup, since that click would otherwi
 pane-deselection handling and immediately undo the selection just set. (A `text` note created via
 `onPaneClick` doesn't need any of this — its selection is set inside that same click handler to begin
 with, which already runs after React Flow's own deselection pass.)
+
+### Card sizing: the inherited line-height trap
+
+Device cards have no min-width and size to their content (title + port columns). `.device-node`
+sets a **unitless** `line-height: 1.3` on purpose: `index.css` (Vite template leftover) sets
+`font: 18px/145%` on `:root`, and a *percentage* line-height is computed to a fixed length where it's
+declared (26px) and inherited as that length — every 12px port row was 26px tall (+ padding = 30px),
+nearly double. A unitless value is inherited as a factor and recomputed per font size. Any new
+compact UI outside `.device-node` / `.palette-item` (which also sets its own) hits the same trap.
+The title is a flex row (name `flex: 1`, centered; ⇄ button `flex: none` beside it) rather than
+symmetric padding reserving room for a one-sided button — on small devices the title sets the width.
 
 ### Screen-space vs flow-space measurement
 
