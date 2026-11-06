@@ -26,6 +26,15 @@ import { protocolStrokeColors } from "./protocolColors";
 import { defaultHiddenGroups } from "./portVisibility";
 import { computeRoutes, type HandleInfo, type RoutingNode } from "./routing";
 import { Toolbar, type Tool } from "./Toolbar";
+import {
+  highestNodeNumber,
+  loadCanvas,
+  restoreCanvas,
+  saveCanvas,
+  toSavedEdge,
+  type SavedNode,
+} from "./canvasPersistence";
+import type { DeviceModel } from "../domain/equipment";
 
 const nodeTypes = { device: DeviceNode, text: TextNode, rect: RectNode };
 const edgeTypes = { patchCable: PatchCableEdge };
@@ -39,10 +48,47 @@ function nextNodeId(prefix: string): string {
   return `${prefix}-${nodeIdCounter}`;
 }
 
+// Instantané enregistrable d'un nœud (voir canvasPersistence.ts) : sans
+// les fonctions de `data`, et un appareil réduit à l'id de son modèle.
+function toSavedNode(node: CanvasNode): SavedNode {
+  if (node.type === "device") {
+    return {
+      id: node.id,
+      type: "device",
+      position: node.position,
+      modelId: node.data.model.id,
+      hiddenGroups: node.data.hiddenGroups,
+      flipped: node.data.flipped,
+    };
+  }
+  if (node.type === "text") {
+    return {
+      id: node.id,
+      type: "text",
+      position: node.position,
+      width: node.width,
+      height: node.height,
+      text: node.data.text,
+      baseWidth: node.data.baseWidth,
+      baseHeight: node.data.baseHeight,
+    };
+  }
+  return { id: node.id, type: "rect", position: node.position, width: node.width, height: node.height, zIndex: node.zIndex };
+}
+
 function FlowCanvasInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, getViewport } = useReactFlow();
+  // Schéma enregistré lors de la dernière visite, lu une seule fois (au
+  // premier rendu) — sert à la fois à la vue de départ (defaultViewport,
+  // qui doit être connue dès ce premier rendu) et aux nœuds/câbles,
+  // restaurés juste après par un effet (voir plus bas).
+  const [savedCanvas] = useState(loadCanvas);
+  // Faux tant que la restauration n'a pas eu lieu : bloque l'enregistrement
+  // automatique, qui sinon écraserait la sauvegarde avec le canevas encore
+  // vide du tout premier rendu.
+  const [restored, setRestored] = useState(false);
   const storeApi = useStoreApi();
   const { catalog } = useCatalog();
   // Par défaut, glisser sur le canevas déplace la vue (comportement React
@@ -223,6 +269,86 @@ function FlowCanvasInner() {
     [setNodes],
   );
 
+  // Restauration du schéma enregistré. Dans un effet plutôt que comme état
+  // initial de useNodesState : un nœud restauré a besoin de ses fonctions
+  // (onToggleGroup, onChangeText...), qui n'existent qu'une fois les
+  // useCallback ci-dessus déclarés — après useNodesState.
+  //
+  // setRestored est appelé dans le MÊME effet que setNodes/setEdges :
+  // React regroupe les trois mises à jour en un seul rendu, donc
+  // l'enregistrement (effet suivant) ne voit jamais `restored` à vrai
+  // avec des nœuds encore vides.
+  useEffect(() => {
+    if (restored) return;
+    if (savedCanvas) {
+      const { nodes: restoredNodes, edges: restoredEdges } = restoreCanvas(savedCanvas, catalog);
+      nodeIdCounter = Math.max(nodeIdCounter, highestNodeNumber(savedCanvas.nodes));
+      const hydrate = ({ saved, model }: { saved: SavedNode; model?: DeviceModel }): CanvasNode[] => {
+        const { id } = saved;
+        if (saved.type === "device") {
+          if (!model) return [];
+          return [
+            {
+              id,
+              type: "device",
+              position: saved.position,
+              data: {
+                model,
+                hiddenGroups: saved.hiddenGroups,
+                flipped: saved.flipped,
+                onToggleGroup: (group) => onToggleGroup(id, group),
+                onToggleFlip: () => onToggleFlip(id),
+              },
+            },
+          ];
+        }
+        if (saved.type === "text") {
+          return [
+            {
+              id,
+              type: "text",
+              position: saved.position,
+              width: saved.width,
+              height: saved.height,
+              data: {
+                text: saved.text,
+                baseWidth: saved.baseWidth,
+                baseHeight: saved.baseHeight,
+                onChangeText: (text) => onChangeText(id, text),
+                onAutoFit: (w, h) => onAutoFitText(id, w, h),
+              },
+            },
+          ];
+        }
+        return [
+          { id, type: "rect", position: saved.position, width: saved.width, height: saved.height, zIndex: saved.zIndex, data: {} },
+        ];
+      };
+      setNodes(restoredNodes.flatMap(hydrate));
+      setEdges(restoredEdges);
+    }
+    setRestored(true);
+  }, [restored, savedCanvas, catalog, setNodes, setEdges, onToggleGroup, onToggleFlip, onChangeText, onAutoFitText]);
+
+  // Enregistrement automatique à chaque changement (y compris à chaque
+  // frame d'un déplacement — un instantané de quelques dizaines de nœuds
+  // s'écrit en une fraction de milliseconde, pas besoin de temporiser).
+  // Rien n'est donc perdu en fermant l'onglet, même juste après un geste.
+  // La vue (déplacement/zoom) est enregistrée séparément, en fin de
+  // mouvement (onMoveEnd plus bas) : elle ne change pas `nodes`.
+  useEffect(() => {
+    if (!restored) return;
+    saveCanvas({ nodes: nodes.map(toSavedNode), edges: edges.map(toSavedEdge), viewport: getViewport() });
+  }, [nodes, edges, restored, getViewport]);
+
+  // Repartir d'une page blanche : sans ce bouton, la sauvegarde
+  // automatique rendrait le canevas impossible à vider d'un coup.
+  const onNewCanvas = useCallback(() => {
+    if (!window.confirm("Effacer tout le schéma en cours ? Cette action est définitive.")) return;
+    setNodes([]);
+    setEdges([]);
+  }, [setNodes, setEdges]);
+
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
@@ -401,6 +527,10 @@ function FlowCanvasInner() {
         selectionOnDrag={activeTool === "select"}
         panOnDrag={activeTool === "select" || activeTool === "rect" ? [1, 2] : true}
         onPaneClick={onPaneClick}
+        defaultViewport={savedCanvas?.viewport}
+        onMoveEnd={(_, viewport) => {
+          if (restored) saveCanvas({ nodes: nodes.map(toSavedNode), edges: edges.map(toSavedEdge), viewport });
+        }}
         // Ctrl (Windows/Linux) fonctionne déjà par défaut (Meta sur Mac) ;
         // Shift s'ajoute explicitement comme second déclencheur équivalent
         // pour le clic-ajout à la sélection — un tableau accepte plusieurs
@@ -414,6 +544,7 @@ function FlowCanvasInner() {
             onSelectTool={(tool) => setActiveTool((current) => (current === tool ? "pan" : tool))}
             hideUnusedPorts={hideUnusedPorts}
             onToggleHideUnusedPorts={() => setHideUnusedPorts((v) => !v)}
+            onNewCanvas={onNewCanvas}
           />
         </Panel>
       </ReactFlow>

@@ -1,0 +1,49 @@
+# Publie l'appli sur GitHub Pages à chaque push sur master :
+# https://morgansouren.github.io/fiche-halles/
+#
+# GitHub construit le site lui-même (npm ci + npm run build) sur ses
+# propres machines puis publie le dossier dist/ — rien à faire depuis ton
+# ordi à part pousser. Le suivi de chaque publication est visible dans
+# l'onglet "Actions" du dépôt.
+name: Déploiement GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  # Bouton "Run workflow" dans l'onglet Actions, pour republier à la main.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Une seule publication à la fois ; une nouvelle remplace celle en attente.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

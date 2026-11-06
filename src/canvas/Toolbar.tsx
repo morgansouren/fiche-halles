@@ -11,13 +11,17 @@ export interface ToolbarProps {
   // props/état séparée plutôt qu'une troisième valeur de Tool.
   hideUnusedPorts: boolean;
   onToggleHideUnusedPorts: () => void;
+  // Vide le canevas (après confirmation, voir FlowCanvas.tsx) — le schéma
+  // étant enregistré automatiquement, c'est la seule façon de repartir de
+  // zéro d'un coup.
+  onNewCanvas: () => void;
 }
 
 // Barre d'outils de mise en page du canevas. Trois outils de glisser
 // (sélection multiple par boîte, note de texte libre, rectangle) et un
 // bouton bascule de vue (masquer les ports inutilisés) ; les futurs
 // outils viendront s'ajouter ici, dans le même panneau.
-export function Toolbar({ activeTool, onSelectTool, hideUnusedPorts, onToggleHideUnusedPorts }: ToolbarProps) {
+export function Toolbar({ activeTool, onSelectTool, hideUnusedPorts, onToggleHideUnusedPorts, onNewCanvas }: ToolbarProps) {
   return (
     <div className="canvas-toolbar">
       <button
@@ -51,6 +55,14 @@ export function Toolbar({ activeTool, onSelectTool, hideUnusedPorts, onToggleHid
         title="Masquer les ports sans câble (et leurs boutons de groupe) pour une vue épurée"
       >
         Masquer ports inutilisés
+      </button>
+      <button
+        type="button"
+        className="canvas-toolbar-button"
+        onClick={onNewCanvas}
+        title="Effacer tout le schéma pour repartir d'une page blanche (le schéma en cours est enregistré automatiquement dans ce navigateur)"
+      >
+        Nouveau schéma
       </button>
     </div>
   );

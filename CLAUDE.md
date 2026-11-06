@@ -28,6 +28,12 @@ React/CSS/React Flow behavior.
   page, no error boundary) on drop. `tsc` passes in that state since the disk file is correct; `touch`
   the file to force a recompile.
 - `npm run build` — full build: `tsc -b && vite build`.
+- **Deployment**: every push to `master` publishes the app to GitHub Pages
+  (https://morgansouren.github.io/fiche-halles/) via `.github/workflows/deploy.yml` — GitHub builds it
+  itself, nothing to run locally. Pages serves from the `/fiche-halles/` subfolder, so `vite.config.ts`
+  sets `base: '/fiche-halles/'` for `build` only (dev stays at `/`). Any new asset must be referenced
+  through Vite (import, or a `/…` path in `index.html` that Vite rewrites), never a hard-coded
+  root-absolute URL in code, or it 404s on Pages.
 - `npx tsc --noEmit -p tsconfig.app.json` — type-check only. **Do not run bare `npx tsc --noEmit`** —
   the root `tsconfig.json` has `"files": []` plus project references (`tsconfig.app.json` /
   `tsconfig.node.json`), so the bare command silently checks nothing and reports success no matter
@@ -377,6 +383,25 @@ whose id is in `customDeviceIds`, never on built-in catalog entries. Editing kee
 devices by a "stable name"). `DeviceCategory` (`domain/equipment.ts`) was widened from a closed union
 to known-literals-plus-`(string & {})` specifically so users can type an arbitrary new category name
 from the form while existing code (autocomplete on the known ones) still works.
+
+### Canvas autosave (`canvas/canvasPersistence.ts`)
+
+The diagram (nodes, edges, viewport) is autosaved to `localStorage` (`fiche-halles:canvas`) on every
+`nodes`/`edges` change (even every drag frame — cheap enough, so nothing is lost on tab close) and on
+`onMoveEnd` for the viewport, and restored on load. Same per-browser scope as custom devices.
+- A **reduced snapshot** is stored, not the React Flow nodes: functions in `data` don't survive JSON,
+  and a device is saved by `modelId`, re-resolved against the *current* catalog on load (catalog edits
+  apply to saved diagrams). A device whose model vanished (deleted custom device, removed temporary
+  entry) is dropped, and `restoreCanvas` drops every edge whose node or port id no longer exists.
+- **Restore happens in an effect, not as `useNodesState`'s initial value**: hydrated nodes need their
+  callbacks (`onToggleGroup`, `onChangeText`…), which are `useCallback`s declared after
+  `useNodesState`. A `restored` state flag, set in the same effect as `setNodes`/`setEdges` (batched
+  into one render), gates the save effect — otherwise the empty first render overwrites the save.
+  The viewport goes through `defaultViewport`, read once via `useState(loadCanvas)`.
+- `nodeIdCounter` is bumped past the highest restored id number (`highestNodeNumber`), else new nodes
+  collide with restored ids. Adding a new node type means extending `SavedNode`, `toSavedNode` and
+  the hydrate step. The toolbar's "Nouveau schéma" (with `confirm`) is the only way to clear it all.
+- The snapshot has a `version`; bump it if its shape changes incompatibly (old saves are then ignored).
 
 ### Discipline tabs in the palette (`domain/equipment.ts`'s `Discipline`)
 
