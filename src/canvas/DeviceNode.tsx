@@ -2,7 +2,7 @@ import { Handle, Position, useUpdateNodeInternals, type Node, type NodeProps } f
 import { useEffect, type CSSProperties } from "react";
 import type { DeviceModel, Port } from "../domain/equipment";
 import { protocolBackground, protocolStrokeColors } from "./protocolColors";
-import { deviceCardStyle } from "./deviceColors";
+import { deviceArt, deviceCardStyle } from "./deviceColors";
 import { portGroupColor, hasKnownPortGroupColor } from "./portGroupColors";
 import { computePortGroups, type HiddenGroups, type PortGroupDef } from "./portVisibility";
 import "./DeviceNode.css";
@@ -158,9 +158,22 @@ export function DeviceNode({ id, data }: NodeProps<DeviceNodeType>) {
   const leftPorts = visiblePorts.filter((port) => positionFor(port, flipped) === Position.Left);
   const rightPorts = visiblePorts.filter((port) => positionFor(port, flipped) === Position.Right);
   const toggleFamilies = groupTogglesByFamily(groups);
+  // Forme dessinée (micro, haut-parleurs, clavier, joues de DI) : des
+  // éléments purement décoratifs (aria-hidden), dessinés par DeviceNode.css.
+  // Ils prennent place DANS la carte (pas en surimpression) : la carte
+  // grandit pour les contenir, donc ils comptent dans ses dimensions — et
+  // donc dans l'obstacle que le routage des câbles contourne.
+  const art = deviceArt(model);
+  const speaker = art === "speaker" || art === "sub";
 
   return (
-    <div className="device-node" style={deviceCardStyle(model)}>
+    <div
+      className={["device-node", art && `device-node-art-${art}`, flipped && "device-node-flipped"].filter(Boolean).join(" ")}
+      style={deviceCardStyle(model)}
+    >
+      {/* La grille du micro est côté entrées (à l'opposé de sa sortie XLR) :
+          inverser la carte la fait passer de l'autre côté (voir CSS). */}
+      {art === "mic" && <span className="device-node-mic-head" aria-hidden />}
       <div className="device-node-title">
         <span className="device-node-title-name">{model.name}</span>
         {/* Pas de bouton sur une carte horizontale : ses ports sont tous en
@@ -256,6 +269,14 @@ export function DeviceNode({ id, data }: NodeProps<DeviceNodeType>) {
               </div>
             ))}
           </div>
+          {/* Entre les deux colonnes : un tweeter au-dessus d'un boomer pour
+              une enceinte, un seul gros haut-parleur pour un sub. */}
+          {speaker && (
+            <div className="device-node-speaker" aria-hidden>
+              {art === "speaker" && <span className="device-node-cone device-node-cone-tweeter" />}
+              <span className={`device-node-cone ${art === "sub" ? "device-node-cone-sub" : "device-node-cone-woofer"}`} />
+            </div>
+          )}
           <div className="device-node-column">
             {rightPorts.map((port) => (
               <div className="device-node-port" key={port.id}>
@@ -272,6 +293,7 @@ export function DeviceNode({ id, data }: NodeProps<DeviceNodeType>) {
           </div>
         </div>
       )}
+      {art === "keys" && <div className="device-node-keys" aria-hidden />}
     </div>
   );
 }

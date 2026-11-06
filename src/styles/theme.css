@@ -94,6 +94,11 @@
   --bp-device-m32c-edge:     oklch(38% 0.004 255); /* rappel des oreilles de rack argentées */
   --bp-device-m32c-face:     oklch(29% 0.003 255);
   --bp-device-m32c-text:     oklch(93% 0.005 255);
+  --bp-device-mg-a:          oklch(33% 0.006 250); /* noir Yamaha MG, éclairci */
+  --bp-device-mg-b:          oklch(28% 0.006 250);
+  --bp-device-mg-text:       oklch(93% 0.005 250);
+  --bp-device-mg-title:      oklch(76% 0.120 235); /* bleu des bandeaux série MG */
+  --bp-device-mg-accent:     oklch(66% 0.140 235);
   --bp-device-dl-a:          oklch(45% 0.165 266); /* bleu roi Midas */
   --bp-device-dl-b:          oklch(39% 0.155 267);
   --bp-device-dl-text:       oklch(97% 0.010 266);
@@ -133,7 +138,33 @@
   --bp-device-speaker-a:     oklch(37% 0.006 60);  /* caisson noir, anthracite chaud */
   --bp-device-speaker-b:     oklch(31% 0.005 60);
   --bp-device-speaker-text:  oklch(93% 0.006 60);
-  --bp-device-other:         oklch(88% 0.01 250);  /* neutre, appareils hors table */
+  /* haut-parleurs dessinés sur les enceintes (DeviceNode.css) */
+  --bp-device-speaker-rim:      oklch(55% 0.005 60);  /* bague de fixation métallique */
+  --bp-device-speaker-surround: oklch(20% 0.003 60);  /* suspension caoutchouc */
+  --bp-device-speaker-cone-a:   oklch(30% 0.004 60);  /* membrane, bord */
+  --bp-device-speaker-cone-b:   oklch(44% 0.005 60);  /* membrane, près du centre */
+  --bp-device-speaker-cap:      oklch(52% 0.006 60);  /* cache-noyau */
+  /* micro main type SM58 : manche gris foncé mat, grille boule argentée */
+  --bp-device-mic-a:         oklch(36% 0.004 260);
+  --bp-device-mic-b:         oklch(30% 0.004 260);
+  --bp-device-mic-text:      oklch(93% 0.005 260);
+  --bp-device-mic-grille:    oklch(80% 0.005 250);
+  --bp-device-mic-mesh:      oklch(52% 0.005 250);
+  --bp-device-mic-shine:     oklch(97% 0.003 250);
+  --bp-device-mic-shade:     oklch(40% 0.005 250);
+  /* BSS AR-133 : extrusion alu anodisée bleu-vert, joues polyuréthane noires */
+  --bp-device-di-a:          oklch(66% 0.085 205);
+  --bp-device-di-b:          oklch(61% 0.085 207);
+  --bp-device-di-text:       oklch(14% 0.020 210);
+  --bp-device-di-cheek:      oklch(22% 0.004 250);
+  /* instrument : façade de synthé anthracite + clavier */
+  --bp-device-synth-a:       oklch(34% 0.005 30);
+  --bp-device-synth-b:       oklch(29% 0.005 30);
+  --bp-device-synth-text:    oklch(93% 0.005 30);
+  --bp-device-synth-key-white: oklch(96% 0.004 90);
+  --bp-device-synth-key-gap:   oklch(68% 0.005 90);
+  --bp-device-synth-key-black: oklch(18% 0.003 260);
+  --bp-device-other:        oklch(88% 0.01 250);  /* neutre, appareils hors table */
 
   /* couleur des ports par groupe (VLAN) sur un switch réseau — tous les
      ports d'un switch partagent le même protocole (Ethernet), c'est donc
@@ -231,6 +262,10 @@
   --device-midas-black-text: var(--bp-device-midas-black-text);
   --device-m32c-bg:      linear-gradient(90deg, var(--bp-device-m32c-edge) 0%, var(--bp-device-m32c-face) 12%, var(--bp-device-m32c-face) 88%, var(--bp-device-m32c-edge) 100%);
   --device-m32c-text:    var(--bp-device-m32c-text);
+  --device-mg-bg:        linear-gradient(180deg, var(--bp-device-mg-a), var(--bp-device-mg-b));
+  --device-mg-text:      var(--bp-device-mg-text);
+  --device-mg-title:     var(--bp-device-mg-title);
+  --device-mg-accent:    var(--bp-device-mg-accent);
   --device-dl-bg:        linear-gradient(180deg, var(--bp-device-dl-a), var(--bp-device-dl-b));
   --device-dl-text:      var(--bp-device-dl-text);
   --device-dl-title:     var(--bp-device-dl-title);
@@ -258,6 +293,27 @@
   --device-atem-accent:  var(--bp-device-atem-accent);
   --device-speaker-bg:   linear-gradient(180deg, var(--bp-device-speaker-a), var(--bp-device-speaker-b));
   --device-speaker-text: var(--bp-device-speaker-text);
+  --device-speaker-rim:      var(--bp-device-speaker-rim);
+  --device-speaker-surround: var(--bp-device-speaker-surround);
+  --device-speaker-cone-a:   var(--bp-device-speaker-cone-a);
+  --device-speaker-cone-b:   var(--bp-device-speaker-cone-b);
+  --device-speaker-cap:      var(--bp-device-speaker-cap);
+  /* manche du micro : dégradé horizontal, plus clair côté grille — il
+     évoque le fût qui s'affine vers la prise XLR */
+  --device-mic-bg:       linear-gradient(90deg, var(--bp-device-mic-a), var(--bp-device-mic-b));
+  --device-mic-text:     var(--bp-device-mic-text);
+  --device-mic-grille:   var(--bp-device-mic-grille);
+  --device-mic-mesh:     var(--bp-device-mic-mesh);
+  --device-mic-shine:    var(--bp-device-mic-shine);
+  --device-mic-shade:    var(--bp-device-mic-shade);
+  --device-di-bg:        linear-gradient(180deg, var(--bp-device-di-a), var(--bp-device-di-b));
+  --device-di-text:      var(--bp-device-di-text);
+  --device-di-cheek:     var(--bp-device-di-cheek);
+  --device-synth-bg:     linear-gradient(180deg, var(--bp-device-synth-a), var(--bp-device-synth-b));
+  --device-synth-text:   var(--bp-device-synth-text);
+  --device-synth-key-white: var(--bp-device-synth-key-white);
+  --device-synth-key-gap:   var(--bp-device-synth-key-gap);
+  --device-synth-key-black: var(--bp-device-synth-key-black);
   --device-other-bg:     var(--bp-device-other);
   --device-other-text:   var(--device-text-dark);
   --device-text-dark:  var(--bp-navy-950);

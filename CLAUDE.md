@@ -65,6 +65,10 @@ Thunderbolt↔USB pair: the catalog's Thunderbolt ports are Thunderbolt 2 (Mini 
 has no passive USB adapter — only Thunderbolt 3/4 (USB-C) is USB-compatible, so a future TB3 device
 needs its own protocol rather than a widened rule.
 
+A passive loudspeaker's two Speakon sockets are a parallel "thru" (amp in on one, chain to the next
+cabinet on the other, either way round), so the Enceinte Passive / SUB model both as `inout` —
+direction rules let `inout` meet anything, so no special-case rule was needed.
+
 `src/canvas/` is the React Flow rendering/interaction layer. It never encodes business rules
 directly — `connectionValidation.ts` is the sole bridge between React Flow's `isValidConnection`
 callback and `domain/compatibility.ts` (it also enforces "one cable per port" via `edges`, which is
@@ -95,7 +99,9 @@ show, and the ATEM Mini Pro hides `"ain-1"` (its Mic 1/2). Prefer this per-devic
 one device's real-world usage justifies it (a general "hide USB in video" rule was tried and wrongly
 hid the only input of the USB-to-ethernet adapter). Likewise, `Port.alwaysVisible` pulls a single
 port out of every group (never hidden, no button — a group left empty disappears with its button),
-e.g. the Macbook's lone Minijack out, where an "Aout 1" toggle gained nothing.
+e.g. the Macbook's lone Minijack out, where an "Aout 1" toggle gained nothing — and every port of
+the `source` category devices (MIC, INSTRUMENT, DI: one or two ports each, a button would only
+leave an empty card at drop).
 
 A device with `DeviceModel.layout === "horizontal"` (network switches, HF racks)
 bypasses this whole group/hide system: `DeviceNode.tsx` renders a single row of always-visible ports
@@ -191,6 +197,23 @@ reality: black chassis are lifted to anthracite (~L 28–37%) so they don't merg
 (~L 23%); a few mid-tones (HD96, Pro1, Netgear) are slightly darkened, keeping their hue. To add a
 device: map its id to an existing look, or add a look (tokens in `theme.css` layers 1 and 2 + a
 `LOOK_CONFIG` entry) and check contrast numerically, not by eye.
+
+**Drawn shapes (`deviceArt`, `ART_BY_MODEL_ID` in `deviceColors.ts`)** go beyond colour for devices
+that aren't boxes or have one telling physical detail: `mic` (silver mesh ball head on the input
+side, the card itself is the handle — the head moves with ⇄ via `.device-node-flipped`), `di`
+(BSS AR-133 teal extrusion between black end cheeks, drawn as inset box-shadows under the port
+dots), `keys` (a synth keyboard strip under the body, real 2+3 black-key grouping), `speaker`
+(tweeter + woofer between the port columns) and `sub` (one big woofer). Shape is kept separate
+from look on purpose: the speaker and the sub share colours but not drivers. `DeviceNode.tsx` only
+adds empty `aria-hidden` elements; all drawing is CSS gradients in `DeviceNode.css` (its own tokens
+in `theme.css`), never `clip-path` — it would also crop the port dots straddling the card border.
+The art lives *inside* the card so it counts in the card's size (and in the routing obstacle); the
+mic head overflows by a few px and the selection halo stays rectangular (accepted). Palette entries
+show the look colours only, not the shapes.
+
+The Yamaha MG16XU (`mg` look: MG-series blue title + accent) is a **temporary** entry for an intern's
+show, marked as such in `catalog.ts` — remove its block, its `deviceColors.ts` lines and the `mg`
+tokens when asked.
 
 **Convention: give every new decorative color its own dedicated primitive + semantic token pair**
 (e.g. `--bp-palette-grad-*`, `--bp-device-*`) instead of reusing an existing semantically-loaded

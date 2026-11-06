@@ -55,6 +55,7 @@ export interface Port {
 // des littéraux ci-dessous tout en acceptant n'importe quelle autre chaîne
 // (un simple `string` ferait perdre l'autocomplétion).
 export type DeviceCategory =
+  | "source"
   | "console"
   | "converter"
   | "speaker"

@@ -284,3 +284,150 @@
   transform: scale(1.8);
   filter: drop-shadow(0 0 3px var(--port-color, var(--accent))) drop-shadow(0 0 7px var(--port-color, var(--accent)));
 }
+
+/* ---------- Formes dessinées (deviceArt, deviceColors.ts) ----------
+   Tout est en dégradés CSS, sans image : les couleurs restent des tokens
+   du thème (theme.css), et rien n'est à charger. Jamais de clip-path pour
+   découper une forme : il rognerait aussi les pastilles de port, posées à
+   cheval sur la bordure de la carte. */
+
+/* Micro main couché : grille boule côté entrées, manche (la carte
+   elle-même) qui va vers la sortie XLR. La carte réserve la place de la
+   grille par un rembourrage ; la boule, un peu plus haute que le manche,
+   déborde de quelques pixels — comme un vrai micro, dont la tête est plus
+   large que le fût. */
+.device-node-art-mic {
+  position: relative;
+  padding-left: 42px;
+  border-radius: 24px 10px 10px 24px;
+}
+
+.device-node-art-mic.device-node-flipped {
+  padding-left: 0;
+  padding-right: 42px;
+  border-radius: 10px 24px 24px 10px;
+}
+
+/* Trois couches au-dessus de l'argent de la grille : reflet en haut à
+   gauche, assombrissement vers le bord (volume de la sphère), puis le
+   maillage croisé à 45°. */
+.device-node-mic-head {
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  width: 54px;
+  height: 54px;
+  translate: 0 -50%;
+  border-radius: 50%;
+  border: 1px solid var(--device-text-light);
+  background:
+    radial-gradient(circle at 34% 30%, var(--device-mic-shine), transparent 42%),
+    radial-gradient(circle closest-side, transparent 62%, var(--device-mic-shade) 100%),
+    repeating-linear-gradient(45deg, var(--device-mic-mesh) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, var(--device-mic-mesh) 0 1px, transparent 1px 4px),
+    var(--device-mic-grille);
+}
+
+.device-node-art-mic.device-node-flipped .device-node-mic-head {
+  left: auto;
+  right: -8px;
+}
+
+/* DI BSS AR-133 : extrusion bleu-vert entre deux joues noires — là où
+   sont les prises sur la vraie boîte, et donc aussi les pastilles ici.
+   Ombres internes (comme le liseré d'accent) plutôt que bordures : elles
+   ne décalent pas les pastilles posées sur le bord. L'écart libellé ↔
+   pastille et le rembourrage du titre s'élargissent d'autant, pour que le
+   texte ne touche pas les joues. */
+.device-node-art-di {
+  border-radius: 6px;
+  box-shadow:
+    inset 10px 0 0 var(--device-di-cheek),
+    inset -10px 0 0 var(--device-di-cheek);
+}
+
+.device-node-art-di .device-node-title {
+  padding-inline: 15px;
+}
+
+.device-node-art-di .device-node-port {
+  gap: 12px;
+}
+
+/* Instrument : un clavier en bas de façade. Deux couches : les touches
+   blanches (bandes de 7px, séparées par un trait), puis les touches noires
+   sur 60 % de la hauteur — motif d'une octave (49px = 7 blanches) répété,
+   avec le groupement réel 2 + 3 noires. */
+.device-node-keys {
+  height: 14px;
+  margin-top: 2px;
+  border-top: 1px solid var(--device-synth-key-black);
+  border-radius: 0 0 3px 3px;
+  background:
+    linear-gradient(
+        to right,
+        transparent 5px,
+        var(--device-synth-key-black) 5px 9px,
+        transparent 9px 12px,
+        var(--device-synth-key-black) 12px 16px,
+        transparent 16px 26px,
+        var(--device-synth-key-black) 26px 30px,
+        transparent 30px 33px,
+        var(--device-synth-key-black) 33px 37px,
+        transparent 37px 40px,
+        var(--device-synth-key-black) 40px 44px,
+        transparent 44px
+      )
+      0 0 / 49px 60% repeat-x,
+    repeating-linear-gradient(to right, var(--device-synth-key-white) 0 6px, var(--device-synth-key-gap) 6px 7px);
+}
+
+/* Enceintes : les haut-parleurs entre la colonne des entrées et celle des
+   sorties ; les ports se centrent verticalement à côté. */
+.device-node-art-speaker,
+.device-node-art-sub {
+  border-radius: 6px;
+}
+
+.device-node-art-speaker .device-node-body,
+.device-node-art-sub .device-node-body {
+  align-items: center;
+}
+
+.device-node-speaker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-block: 6px;
+}
+
+/* De l'extérieur vers le centre : bague métallique, suspension, membrane
+   (plus claire vers le centre, pour le creux du cône), cache-noyau. */
+.device-node-cone {
+  display: block;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    var(--device-speaker-cap) 0 20%,
+    var(--device-speaker-cone-b) 23%,
+    var(--device-speaker-cone-a) 68%,
+    var(--device-speaker-surround) 71% 88%,
+    var(--device-speaker-rim) 90% 100%
+  );
+}
+
+.device-node-cone-tweeter {
+  width: 14px;
+  height: 14px;
+}
+
+.device-node-cone-woofer {
+  width: 36px;
+  height: 36px;
+}
+
+.device-node-cone-sub {
+  width: 46px;
+  height: 46px;
+}

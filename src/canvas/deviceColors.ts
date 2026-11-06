@@ -31,6 +31,7 @@ type DeviceLook =
   | "pro1"
   | "midas-black"
   | "m32c"
+  | "mg"
   | "dl"
   | "dn"
   | "nxamp"
@@ -43,15 +44,24 @@ type DeviceLook =
   | "rz770"
   | "atem"
   | "speaker"
+  | "mic"
+  | "di"
+  | "synth"
   | "other";
 
 const LOOK_BY_MODEL_ID: Record<string, DeviceLook> = {
   "speaker-active": "speaker",
+  "speaker-passive": "speaker",
+  "sub": "speaker",
+  "mic": "mic",
+  "di": "di",
+  "instrument": "synth",
   "midas-hd96": "hd96",
   "midas-pro1": "pro1",
   "midas-m32r": "midas-black",
   "dl16": "midas-black",
   "midas-m32c": "m32c",
+  "yamaha-mg16xu": "mg",
   "dl151": "dl",
   "dl153": "dl",
   "dl154": "dl",
@@ -97,7 +107,9 @@ const LOOK_CONFIG: Record<DeviceLook, LookConfig> = {
   hd96: { accent: true },
   pro1: {},
   "midas-black": {},
+  // Liseré + nom dans le bleu des bandeaux de la série MG.
   m32c: {},
+  mg: { title: true, accent: true },
   dl: { title: true },
   dn: { light: true },
   nxamp: {},
@@ -112,8 +124,33 @@ const LOOK_CONFIG: Record<DeviceLook, LookConfig> = {
   rz770: {},
   atem: { accent: true },
   speaker: {},
+  mic: {},
+  di: { light: true },
+  synth: {},
   other: { light: true },
 };
+
+// Forme dessinée en plus des couleurs, pour les appareils qui ne sont pas
+// des "boîtes" (micro, enceintes) ou dont un détail physique se reconnaît
+// mieux dessiné que résumé en couleur (clavier d'un synthé, joues noires
+// d'une DI BSS). Séparé de l'apparence : la couleur et la forme ne vont
+// pas toujours ensemble — l'enceinte et le sub partagent les mêmes
+// couleurs, pas le même haut-parleur. Lu par DeviceNode.tsx, qui ajoute
+// les éléments décoratifs ; le dessin lui-même est dans DeviceNode.css.
+export type DeviceArt = "mic" | "di" | "keys" | "speaker" | "sub";
+
+const ART_BY_MODEL_ID: Record<string, DeviceArt> = {
+  "mic": "mic",
+  "di": "di",
+  "instrument": "keys",
+  "speaker-active": "speaker",
+  "speaker-passive": "speaker",
+  "sub": "sub",
+};
+
+export function deviceArt(model: DeviceModel): DeviceArt | undefined {
+  return ART_BY_MODEL_ID[model.id];
+}
 
 function lookOf(model: DeviceModel): DeviceLook {
   return LOOK_BY_MODEL_ID[model.id] ?? "other";

@@ -5,12 +5,65 @@ import type { DeviceModel } from "./equipment";
 // compatible avec chacun de ces deux protocoles, et une enceinte).
 export const catalog: DeviceModel[] = [
 
+  // Sources : ports toujours visibles — avec un ou deux ports, les cacher
+  // derrière un bouton Ain/Aout laisserait une carte vide à la pose.
+  {
+    id: "mic",
+    name: "MIC",
+    discipline: "son",
+    category: "source",
+    ports: [{ id: "analog-out", label: "Analog Out", protocol: "Analog", direction: "out", alwaysVisible: true }],
+  },
+  {
+    id: "instrument",
+    name: "INSTRUMENT",
+    discipline: "son",
+    category: "source",
+    ports: [
+      { id: "analog-out-1", label: "Analog Out 1", protocol: "Analog", direction: "out", alwaysVisible: true },
+      { id: "analog-out-2", label: "Analog Out 2", protocol: "Analog", direction: "out", alwaysVisible: true },
+    ],
+  },
+  {
+    id: "di",
+    name: "DI",
+    discipline: "son",
+    category: "source",
+    ports: [
+      { id: "analog-in", label: "Analog In", protocol: "Analog", direction: "in", alwaysVisible: true },
+      { id: "analog-out", label: "Analog Out", protocol: "Analog", direction: "out", alwaysVisible: true },
+    ],
+  },
   {
     id: "speaker-active",
     name: "Enceinte active",
     discipline: "son",
     category: "speaker",
     ports: [{ id: "analog-in", label: "Analog In", protocol: "Analog", direction: "in" }],
+  },
+  // Enceinte passive / sub : les deux Speakon sont câblés en parallèle dans
+  // le caisson (l'un reçoit l'ampli, l'autre repart vers le caisson suivant,
+  // indifféremment) — d'où "inout" : accepte une sortie d'ampli comme un
+  // autre Speakon "inout" en chaînage.
+  {
+    id: "speaker-passive",
+    name: "Enceinte Passive",
+    discipline: "son",
+    category: "speaker",
+    ports: [
+      { id: "speakon-1", label: "Speakon 1", protocol: "Speakon", direction: "inout" },
+      { id: "speakon-2", label: "Speakon 2", protocol: "Speakon", direction: "inout" },
+    ],
+  },
+  {
+    id: "sub",
+    name: "SUB",
+    discipline: "son",
+    category: "speaker",
+    ports: [
+      { id: "speakon-1", label: "Speakon 1", protocol: "Speakon", direction: "inout" },
+      { id: "speakon-2", label: "Speakon 2", protocol: "Speakon", direction: "inout" },
+    ],
   },
   {
     id: "midas-hd96",
@@ -142,6 +195,50 @@ export const catalog: DeviceModel[] = [
       { id: "midi-thru", label: "MIDI Thru", protocol: "MIDI", direction: "inout" },
       { id: "ethernet", label: "Ethernet", protocol: "Ethernet", direction: "inout" },
 
+    ],
+  },
+  // TEMPORAIRE — console d'un stagiaire, pour préparer sa régie.
+  // Une entrée = un port, même quand la voie a plusieurs connecteurs :
+  // les combos XLR/jack 1-8, et pour les voies stéréo 9/10 et 11/12 le
+  // XLR MIC (qui entre sur 9 / 11) et les jacks LINE L/R. Le Stereo Out
+  // existe en XLR et en jack (même signal) : un seul port par côté. Ni
+  // Foot SW, ni Phones (pas un appareil du catalogue).
+  {
+    id: "yamaha-mg16xu",
+    name: "Yamaha MG16XU",
+    discipline: "son",
+    category: "console",
+    ports: [
+      // In
+      { id: "analog-in-1", label: "Analog In 1", protocol: "Analog", direction: "in" },
+      { id: "analog-in-2", label: "Analog In 2", protocol: "Analog", direction: "in" },
+      { id: "analog-in-3", label: "Analog In 3", protocol: "Analog", direction: "in" },
+      { id: "analog-in-4", label: "Analog In 4", protocol: "Analog", direction: "in" },
+      { id: "analog-in-5", label: "Analog In 5", protocol: "Analog", direction: "in" },
+      { id: "analog-in-6", label: "Analog In 6", protocol: "Analog", direction: "in" },
+      { id: "analog-in-7", label: "Analog In 7", protocol: "Analog", direction: "in" },
+      { id: "analog-in-8", label: "Analog In 8", protocol: "Analog", direction: "in" },
+      { id: "analog-in-9", label: "Analog In 9", protocol: "Analog", direction: "in" },
+      { id: "analog-in-10", label: "Analog In 10", protocol: "Analog", direction: "in" },
+      { id: "analog-in-11", label: "Analog In 11", protocol: "Analog", direction: "in" },
+      { id: "analog-in-12", label: "Analog In 12", protocol: "Analog", direction: "in" },
+      { id: "analog-in-13", label: "Analog In 13", protocol: "Analog", direction: "in" },
+      { id: "analog-in-14", label: "Analog In 14", protocol: "Analog", direction: "in" },
+      { id: "analog-in-15", label: "Analog In 15", protocol: "Analog", direction: "in" },
+      { id: "analog-in-16", label: "Analog In 16", protocol: "Analog", direction: "in" },
+      // Out
+      { id: "aux-send-1", label: "Aux Send 1", protocol: "Aux", direction: "out" },
+      { id: "aux-send-2", label: "Aux Send 2", protocol: "Aux", direction: "out" },
+      { id: "aux-send-3", label: "Aux Send 3", protocol: "Aux", direction: "out" },
+      { id: "aux-send-4", label: "Aux Send 4", protocol: "Aux", direction: "out" },
+      { id: "stereo-out-l", label: "Stereo Out L", protocol: "Analog", direction: "out" },
+      { id: "stereo-out-r", label: "Stereo Out R", protocol: "Analog", direction: "out" },
+      { id: "monitor-out-l", label: "Monitor Out L", protocol: "Analog", direction: "out" },
+      { id: "monitor-out-r", label: "Monitor Out R", protocol: "Analog", direction: "out" },
+      { id: "group-out-1", label: "Group Out 1", protocol: "Analog", direction: "out" },
+      { id: "group-out-2", label: "Group Out 2", protocol: "Analog", direction: "out" },
+      { id: "group-out-3", label: "Group Out 3", protocol: "Analog", direction: "out" },
+      { id: "group-out-4", label: "Group Out 4", protocol: "Analog", direction: "out" },
     ],
   },
   {

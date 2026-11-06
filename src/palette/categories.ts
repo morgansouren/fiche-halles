@@ -17,6 +17,7 @@ export const disciplineCategories: Record<Discipline, DeviceCategory[]> = {
 // catégorie créée depuis le formulaire n'y figure jamais, son propre texte
 // (tel que tapé) sert alors directement de libellé.
 const categoryLabels: Record<string, string> = {
+  source: "Sources",
   console: "Consoles",
   converter: "Boîtiers / convertisseurs",
   speaker: "Enceintes",
